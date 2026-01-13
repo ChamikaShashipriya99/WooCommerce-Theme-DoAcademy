@@ -42,10 +42,11 @@ function woocommerce_theme_setup() {
 	// WordPress will handle the <title> tag automatically
 	add_theme_support( 'title-tag' );
 
-	// Register navigation menu
-	// This creates a menu location that can be assigned in Appearance > Menus
+	// Register navigation menus
+	// This creates menu locations that can be assigned in Appearance > Menus
 	register_nav_menus( array(
 		'primary' => esc_html__( 'Primary Menu', 'woocommerce' ),
+		'footer'  => esc_html__( 'Footer Menu', 'woocommerce' ),
 	) );
 
 	// Add WooCommerce theme support
@@ -57,6 +58,12 @@ function woocommerce_theme_setup() {
 	add_theme_support( 'wc-product-gallery-zoom' );
 	add_theme_support( 'wc-product-gallery-lightbox' );
 	add_theme_support( 'wc-product-gallery-slider' );
+
+	// Add WooCommerce product image sizes
+	// These sizes are optimized for product display
+	add_image_size( 'woocommerce-thumbnail', 300, 300, true );
+	add_image_size( 'woocommerce-single', 600, 600, true );
+	add_image_size( 'woocommerce-gallery-thumbnail', 150, 150, true );
 }
 // Hook into the 'after_setup_theme' action
 // This ensures the setup function runs at the right time
@@ -72,12 +79,19 @@ function woocommerce_theme_enqueue_assets() {
 	// Get the theme version from style.css (for cache busting)
 	$theme_version = wp_get_theme()->get( 'Version' );
 
+	// Prepare dependencies array
+	// Add WooCommerce stylesheet as dependency if WooCommerce is active
+	$dependencies = array();
+	if ( class_exists( 'WooCommerce' ) ) {
+		$dependencies[] = 'woocommerce-general';
+	}
+
 	// Enqueue the main stylesheet
 	// This loads assets/css/style.css with proper dependency handling
 	wp_enqueue_style(
 		'woocommerce-theme-style',                    // Handle (unique identifier)
 		get_template_directory_uri() . '/assets/css/style.css', // Path to stylesheet
-		array(),                                      // Dependencies (none in this case)
+		$dependencies,                                // Dependencies (WooCommerce if active)
 		$theme_version                                // Version (for cache busting)
 	);
 
@@ -109,13 +123,15 @@ function woocommerce_theme_remove_default_wrappers() {
 
 	/**
 	 * Remove WooCommerce default opening wrapper
-	 * Priority 10 is the default, we need to match it exactly to remove it
+	 * Priority 10 is the default, we need to match it exactly to remove it.
+	 * Priority determines the order in which hooks are executed.
 	 */
 	remove_action( 'woocommerce_before_main_content', 'woocommerce_output_content_wrapper', 10 );
 
 	/**
 	 * Remove WooCommerce default closing wrapper
-	 * Priority 10 is the default, we need to match it exactly to remove it
+	 * Priority 10 is the default, we need to match it exactly to remove it.
+	 * Priority determines the order in which hooks are executed.
 	 */
 	remove_action( 'woocommerce_after_main_content', 'woocommerce_output_content_wrapper_end', 10 );
 }
@@ -130,6 +146,12 @@ add_action( 'wp', 'woocommerce_theme_remove_default_wrappers' );
  * This wrapper matches our theme's HTML structure from header.php and index.php.
  */
 function woocommerce_theme_wrapper_start() {
+	// Only output wrapper if WooCommerce is active
+	// This prevents wrapper from being output when WooCommerce is not installed
+	if ( ! class_exists( 'WooCommerce' ) ) {
+		return;
+	}
+
 	/**
 	 * Output opening wrapper div that matches our theme structure
 	 * This ensures WooCommerce pages (shop, product, cart, checkout) 
@@ -138,7 +160,7 @@ function woocommerce_theme_wrapper_start() {
 	echo '<div id="primary" class="site-main woocommerce-page">';
 }
 // Hook into 'woocommerce_before_main_content' action
-// Priority 10 ensures it runs at the standard time
+// Priority 10 ensures it runs at the standard time (same as default WooCommerce hooks)
 add_action( 'woocommerce_before_main_content', 'woocommerce_theme_wrapper_start', 10 );
 
 /**
@@ -155,7 +177,7 @@ function woocommerce_theme_wrapper_end() {
 	echo '</div><!-- #primary -->';
 }
 // Hook into 'woocommerce_after_main_content' action
-// Priority 10 ensures it runs at the standard time
+// Priority 10 ensures it runs at the standard time (same as default WooCommerce hooks)
 add_action( 'woocommerce_after_main_content', 'woocommerce_theme_wrapper_end', 10 );
 
 /**
@@ -197,19 +219,33 @@ add_action( 'template_redirect', 'woocommerce_theme_ensure_page_structure' );
  *
  * This function removes sidebar/widget area support from the theme.
  * It unregisters default WordPress sidebars to prevent them from displaying.
+ * Note: unregister_sidebar() will silently fail if sidebar doesn't exist,
+ * so no error handling is needed. However, we check for existence to avoid
+ * potential warnings in debug mode.
  */
 function woocommerce_theme_remove_sidebars() {
-	// Unregister default WordPress sidebars
-	unregister_sidebar( 'sidebar-1' );
-	unregister_sidebar( 'sidebar-2' );
-	
+	global $wp_registered_sidebars;
+
+	// Check if sidebar exists before unregistering to avoid warnings
+	if ( isset( $wp_registered_sidebars['sidebar-1'] ) ) {
+		unregister_sidebar( 'sidebar-1' );
+	}
+	if ( isset( $wp_registered_sidebars['sidebar-2'] ) ) {
+		unregister_sidebar( 'sidebar-2' );
+	}
+
 	// Unregister WooCommerce sidebars if they exist
 	if ( function_exists( 'is_woocommerce' ) ) {
-		unregister_sidebar( 'shop-sidebar' );
-		unregister_sidebar( 'woocommerce-sidebar' );
+		if ( isset( $wp_registered_sidebars['shop-sidebar'] ) ) {
+			unregister_sidebar( 'shop-sidebar' );
+		}
+		if ( isset( $wp_registered_sidebars['woocommerce-sidebar'] ) ) {
+			unregister_sidebar( 'woocommerce-sidebar' );
+		}
 	}
 }
-// Hook into 'widgets_init' action with high priority to remove sidebars
+// Hook into 'widgets_init' action with high priority (99) to remove sidebars
+// High priority ensures this runs after sidebars are registered by other themes/plugins
 add_action( 'widgets_init', 'woocommerce_theme_remove_sidebars', 99 );
 
 /**
@@ -235,10 +271,17 @@ add_action( 'wp', 'woocommerce_theme_remove_woocommerce_sidebar' );
  *
  * This function prevents any sidebar from being displayed
  * by returning false for is_active_sidebar checks.
+ * Note: This is intentional and may interfere with plugins that rely on
+ * sidebar detection. This ensures no sidebars are displayed anywhere in the theme.
+ *
+ * @param bool   $is_active_sidebar Whether the sidebar is active.
+ * @param string $index             Sidebar index/ID.
+ * @return bool Always returns false to disable all sidebars.
  */
 function woocommerce_theme_disable_sidebar_display( $is_active_sidebar, $index ) {
 	return false;
 }
 // Filter to disable all sidebars
+// Priority 10 is standard, accepts 2 parameters (is_active_sidebar result and sidebar index)
 add_filter( 'is_active_sidebar', 'woocommerce_theme_disable_sidebar_display', 10, 2 );
 

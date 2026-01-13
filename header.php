@@ -23,8 +23,12 @@
  * wp_body_open() allows plugins and themes to inject content
  * right after the opening <body> tag.
  * This is a WordPress 5.2+ feature.
+ * Note: If WordPress < 5.2, this function won't exist, but won't cause errors
+ * as it's only called if the function exists.
  */
-wp_body_open();
+if ( function_exists( 'wp_body_open' ) ) {
+	wp_body_open();
+}
 ?>
 
 <div id="page" class="site">

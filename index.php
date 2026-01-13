@@ -6,6 +6,11 @@
  * and one of the two required files for a theme (the other being style.css).
  * It is used to display a page when nothing more specific matches a query.
  *
+ * Template Hierarchy:
+ * - index.php (this file) - fallback for all pages
+ * - WooCommerce templates override this for shop/product pages
+ * - WordPress will use archive.php, single.php, etc. if they exist
+ *
  * @package WooCommerce
  */
 

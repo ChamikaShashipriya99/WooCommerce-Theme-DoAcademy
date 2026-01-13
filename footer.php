@@ -19,6 +19,11 @@
 				<div class="footer-column">
 					<h3 class="footer-title"><?php esc_html_e( 'Quick Links', 'woocommerce' ); ?></h3>
 					<?php
+					/**
+					 * Display footer navigation menu
+					 * Note: 'footer' menu location must be registered in functions.php
+					 * If not registered, fallback links will be displayed instead
+					 */
 					wp_nav_menu( array(
 						'theme_location' => 'footer',
 						'container'      => false,
@@ -40,6 +45,13 @@
 
 				<div class="footer-column">
 					<h3 class="footer-title"><?php esc_html_e( 'Contact Us', 'woocommerce' ); ?></h3>
+					<?php
+					/**
+					 * Contact information section
+					 * TODO: Replace placeholder values with actual contact information
+					 * or use WordPress Customizer options for better flexibility
+					 */
+					?>
 					<p>
 						<strong><?php esc_html_e( 'Email:', 'woocommerce' ); ?></strong><br>
 						<a href="mailto:info@example.com">info@example.com</a>
