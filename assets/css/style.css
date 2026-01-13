@@ -46,7 +46,7 @@ body {
 .site-main {
 	flex: 1;
 	padding: 2rem 1rem;
-	max-width: 1200px;
+	max-width: 1920px;
 	margin: 0 auto;
 	width: 100%;
 }
@@ -67,7 +67,7 @@ body {
 }
 
 .site-header .site-header-inner {
-	max-width: 1200px;
+	max-width: 1920px;
 	margin: 0 auto;
 	padding: 0 1rem;
 	display: flex;
@@ -81,6 +81,8 @@ body {
 	justify-content: space-between;
 	flex-wrap: wrap;
 	gap: 1rem;
+	max-width: 1920px;
+	margin: 0 auto;
 }
 
 .site-title {
@@ -245,7 +247,7 @@ article:last-child {
 }
 
 .site-info {
-	max-width: 1200px;
+	max-width: 1920px;
 	margin: 0 auto;
 	text-align: center;
 	font-size: 0.875rem;
@@ -604,15 +606,54 @@ article:last-child {
 
 /**
  * Mobile-first responsive breakpoints
- * Breakpoints:
- * - Mobile: < 600px (default, 1 column)
- * - Tablet: 600px+ (2 columns)
- * - Desktop: 900px+ (3 columns)
- * - Large: 1200px+ (4 columns)
+ * 
+ * Standard Breakpoints:
+ * - Mobile: 0px to 767px (1 column)
+ * - iPad: 768px to 1199px (2 columns)
+ * - Desktop: 1200px upward (3-4 columns)
+ *   - 1366px (Laptop)
+ *   - 1440px (MacBook 13")
+ *   - 1680px (22" Desktop)
+ *   - 1920px (1080p - Max Width)
+ * 
+ * Device Support:
+ * - Mobile: Galaxy S9+, iPhone SE, iPhone 6/7/8, iPhone XR, iPhone 12 Pro, 
+ *           iPhone 14 Pro Max, Pixel 7, Samsung Galaxy S20 Ultra
+ * - Tablet: iPad Mini, iPad Air, iPad Pro
+ * - Desktop: MacBook 13", 22" Desktop, iMac 27", Laptop, Square Monitor, 1080p
  */
 
-/* Tablet: 2 columns for products */
-@media (min-width: 600px) {
+/* ==========================================================================
+   Mobile: 0px to 767px
+   ========================================================================== */
+
+/* Mobile base styles (default, no media query needed) */
+.site-main {
+	padding: 1rem;
+}
+
+.woocommerce-page {
+	padding: 1rem;
+}
+
+.entry-title {
+	font-size: 1.5rem;
+}
+
+.woocommerce ul.products {
+	grid-template-columns: 1fr;
+	gap: 1rem;
+}
+
+.woocommerce ul.products li.product .product-info {
+	padding: 0.75rem;
+}
+
+/* ==========================================================================
+   iPad: 768px to 1199px
+   ========================================================================== */
+
+@media (min-width: 768px) and (max-width: 1199px) {
 	.site-header .site-header-inner {
 		flex-direction: row;
 		align-items: center;
@@ -632,13 +673,21 @@ article:last-child {
 		padding: 0.5rem 0;
 	}
 
+	.site-main {
+		padding: 2rem 1.5rem;
+	}
+
+	.woocommerce-page {
+		padding: 2rem 1.5rem;
+	}
+
 	.woocommerce ul.products {
 		grid-template-columns: repeat(2, 1fr);
 		gap: 2rem;
 	}
 
-	.woocommerce-page {
-		padding: 2rem 1.5rem;
+	.woocommerce ul.products li.product .product-info {
+		padding: 1rem;
 	}
 
 	.woocommerce a.button,
@@ -648,44 +697,86 @@ article:last-child {
 	}
 }
 
-/* Desktop: 3 columns for products */
-@media (min-width: 900px) {
+/* ==========================================================================
+   Desktop: 1200px upward
+   ========================================================================== */
+
+/* Desktop Base: 1200px+ (3 columns) */
+@media (min-width: 1200px) {
+	.site-header .site-header-inner {
+		flex-direction: row;
+		align-items: center;
+		justify-content: space-between;
+	}
+
+	.main-navigation {
+		width: auto;
+	}
+
+	#primary-menu {
+		flex-direction: row;
+		gap: 1.5rem;
+	}
+
+	#primary-menu a {
+		padding: 0.5rem 0;
+	}
+
 	.site-main {
+		padding: 2rem 1.5rem;
+	}
+
+	.woocommerce-page {
 		padding: 2rem 1.5rem;
 	}
 
 	.woocommerce ul.products {
 		grid-template-columns: repeat(3, 1fr);
+		gap: 2rem;
+	}
+
+	.woocommerce a.button,
+	.woocommerce button.button,
+	.woocommerce input.button {
+		width: auto;
 	}
 }
 
-/* Large Desktop: 4 columns for products */
-@media (min-width: 1200px) {
+/* Desktop Large: 1366px+ (Laptop) - 3 columns maintained */
+@media (min-width: 1366px) {
+	.woocommerce ul.products {
+		grid-template-columns: repeat(3, 1fr);
+	}
+}
+
+/* Desktop XL: 1440px+ (MacBook 13") - 4 columns */
+@media (min-width: 1440px) {
 	.woocommerce ul.products {
 		grid-template-columns: repeat(4, 1fr);
 	}
 }
 
-/* Mobile adjustments */
-@media (max-width: 599px) {
-	.site-main {
-		padding: 1rem;
+/* Desktop XXL: 1680px+ (22" Desktop) - 4 columns maintained */
+@media (min-width: 1680px) {
+	.woocommerce ul.products {
+		grid-template-columns: repeat(4, 1fr);
 	}
+}
 
-	.woocommerce-page {
-		padding: 1rem;
-	}
-
-	.entry-title {
-		font-size: 1.5rem;
+/* Desktop Max: 1920px (1080p) - Max width constraint */
+@media (min-width: 1920px) {
+	.site-main,
+	.site-header .site-header-inner,
+	.site-branding,
+	.main-navigation {
+		max-width: 1920px;
+		margin-left: auto;
+		margin-right: auto;
 	}
 
 	.woocommerce ul.products {
-		gap: 1rem;
-	}
-
-	.woocommerce ul.products li.product .product-info {
-		padding: 0.75rem;
+		grid-template-columns: repeat(4, 1fr);
+		max-width: 1920px;
 	}
 }
 
