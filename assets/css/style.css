@@ -78,11 +78,8 @@ body {
 .site-branding {
 	display: flex;
 	align-items: center;
-	justify-content: space-between;
 	flex-wrap: wrap;
-	gap: 1rem;
-	max-width: 1920px;
-	margin: 0 auto;
+	gap: 0.5rem;
 }
 
 .site-title {
@@ -113,6 +110,7 @@ body {
  * Main navigation menu
  * Primary menu location
  * Mobile-first: Vertical on small screens, horizontal on larger
+ * Aligned to the right on tablet and desktop
  */
 .main-navigation {
 	width: 100%;
@@ -660,13 +658,19 @@ article:last-child {
 		justify-content: space-between;
 	}
 
+	.site-branding {
+		flex: 0 0 auto;
+	}
+
 	.main-navigation {
 		width: auto;
+		margin-left: auto;
 	}
 
 	#primary-menu {
 		flex-direction: row;
 		gap: 1.5rem;
+		justify-content: flex-end;
 	}
 
 	#primary-menu a {
@@ -709,13 +713,19 @@ article:last-child {
 		justify-content: space-between;
 	}
 
+	.site-branding {
+		flex: 0 0 auto;
+	}
+
 	.main-navigation {
 		width: auto;
+		margin-left: auto;
 	}
 
 	#primary-menu {
 		flex-direction: row;
 		gap: 1.5rem;
+		justify-content: flex-end;
 	}
 
 	#primary-menu a {
