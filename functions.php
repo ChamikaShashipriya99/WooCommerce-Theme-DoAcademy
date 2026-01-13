@@ -285,3 +285,131 @@ function woocommerce_theme_disable_sidebar_display( $is_active_sidebar, $index )
 // Priority 10 is standard, accepts 2 parameters (is_active_sidebar result and sidebar index)
 add_filter( 'is_active_sidebar', 'woocommerce_theme_disable_sidebar_display', 10, 2 );
 
+/**
+ * Add Product Origin Dropdown Field to Product Edit Screen
+ *
+ * This function adds a custom dropdown field "Product Origin" to the WooCommerce
+ * product edit screen in the General tab. The field allows selecting between
+ * "Local" and "Imported" options.
+ *
+ * Hook: woocommerce_product_options_general_product_data
+ * This hook fires when WooCommerce renders the general product data section
+ * in the product edit screen.
+ */
+function woocommerce_add_product_origin_field() {
+	// Check if WooCommerce is active before proceeding
+	// This prevents errors if WooCommerce is deactivated
+	if ( ! class_exists( 'WooCommerce' ) ) {
+		return;
+	}
+
+	// Get the current post object (the product being edited)
+	global $post;
+	
+	// Get the saved product origin value from post meta
+	// Returns empty string if no value exists
+	$product_origin = get_post_meta( $post->ID, '_product_origin', true );
+
+	// Define the dropdown options
+	// Array structure: value => label
+	$options = array(
+		''         => __( 'Select Origin', 'woocommerce' ), // Default empty option
+		'local'    => __( 'Local', 'woocommerce' ),
+		'imported' => __( 'Imported', 'woocommerce' ),
+	);
+
+	// Start the custom field wrapper
+	// This ensures proper styling and layout within WooCommerce's admin interface
+	echo '<div class="options_group">';
+
+	// Output the field label
+	// Using woocommerce_wp_select() helper function which creates a properly styled select field
+	woocommerce_wp_select( array(
+		'id'          => '_product_origin',           // Field ID (also used as meta key)
+		'label'       => __( 'Product Origin', 'woocommerce' ), // Field label displayed to user
+		'options'     => $options,                    // Array of options for the dropdown
+		'value'       => $product_origin,             // Current selected value
+		'desc_tip'    => true,                        // Show description as tooltip
+		'description' => __( 'Select whether this product is locally sourced or imported.', 'woocommerce' ), // Help text
+	) );
+
+	// Close the field wrapper
+	echo '</div>';
+}
+// Hook into WooCommerce product options general product data section
+// Priority 10 ensures it displays at the standard time
+add_action( 'woocommerce_product_options_general_product_data', 'woocommerce_add_product_origin_field', 10 );
+
+/**
+ * Save Product Origin Field Value
+ *
+ * This function saves the Product Origin dropdown value to the product's post meta
+ * when the product is saved or updated. It includes proper nonce verification
+ * and data sanitization for security.
+ *
+ * Hook: woocommerce_process_product_meta
+ * This hook fires when WooCommerce processes and saves product meta data.
+ *
+ * @param int $post_id The ID of the product being saved.
+ */
+function woocommerce_save_product_origin_field( $post_id ) {
+	// Check if WooCommerce is active before proceeding
+	if ( ! class_exists( 'WooCommerce' ) ) {
+		return;
+	}
+
+	// Verify this is a product post type
+	// This ensures we only save meta for products, not other post types
+	if ( get_post_type( $post_id ) !== 'product' ) {
+		return;
+	}
+
+	// Verify nonce for security
+	// This ensures the request came from the WordPress admin and prevents CSRF attacks
+	// The nonce name 'woocommerce_save_data' is automatically added by WooCommerce
+	if ( ! isset( $_POST['woocommerce_meta_nonce'] ) || 
+		 ! wp_verify_nonce( $_POST['woocommerce_meta_nonce'], 'woocommerce_save_data' ) ) {
+		return; // Exit if nonce verification fails
+	}
+
+	// Check if this is an autosave
+	// Autosaves shouldn't update our custom field
+	if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) {
+		return;
+	}
+
+	// Check user permissions
+	// Ensure the current user has permission to edit products
+	if ( ! current_user_can( 'edit_product', $post_id ) ) {
+		return; // Exit if user doesn't have permission
+	}
+
+	// Check if the product origin field was submitted
+	// isset() checks if the field exists in $_POST array
+	if ( ! isset( $_POST['_product_origin'] ) ) {
+		return; // Exit if field wasn't submitted
+	}
+
+	// Sanitize the submitted value
+	// sanitize_text_field() removes any potentially dangerous characters
+	// This prevents XSS attacks and ensures data integrity
+	$product_origin = sanitize_text_field( $_POST['_product_origin'] );
+
+	// Validate the value against allowed options
+	// This ensures only valid values ('local' or 'imported') are saved
+	// Empty string is also allowed (for clearing the field)
+	$allowed_values = array( '', 'local', 'imported' );
+	if ( ! in_array( $product_origin, $allowed_values, true ) ) {
+		// If invalid value, set to empty string as fallback
+		$product_origin = '';
+	}
+
+	// Save the sanitized value to post meta
+	// update_post_meta() automatically handles add/update logic
+	// The meta key '_product_origin' (with underscore prefix) is hidden from custom fields meta box
+	update_post_meta( $post_id, '_product_origin', $product_origin );
+}
+// Hook into WooCommerce product meta processing
+// Priority 10 ensures it saves at the standard time
+add_action( 'woocommerce_process_product_meta', 'woocommerce_save_product_origin_field', 10 );
+
