@@ -61,7 +61,7 @@ body {
  * Mobile-first: Stacked layout on small screens, horizontal on larger
  */
 .site-header {
-	background-color: #fff;
+	background-color: #f5f5f5;
 	border-bottom: 1px solid #e0e0e0;
 	padding: 1rem 0;
 }
@@ -131,7 +131,7 @@ body {
 }
 
 #primary-menu a {
-	color: #333;
+	color: #666;
 	text-decoration: none;
 	font-weight: 500;
 	font-size: 0.95rem;
@@ -143,6 +143,7 @@ body {
 #primary-menu a:hover,
 #primary-menu a:focus {
 	color: #0073aa;
+	text-decoration: underline;
 }
 
 #primary-menu .current-menu-item > a {
@@ -244,6 +245,122 @@ article:last-child {
 	margin-top: 3rem;
 }
 
+/**
+ * Footer widgets area
+ * Contains multiple footer columns
+ */
+.footer-widgets {
+	max-width: 1920px;
+	margin: 0 auto 2rem;
+}
+
+.footer-widget-area {
+	display: grid;
+	grid-template-columns: 1fr;
+	gap: 2rem;
+	margin-bottom: 2rem;
+	padding-bottom: 2rem;
+	border-bottom: 1px solid #e0e0e0;
+}
+
+.footer-column {
+	font-size: 0.875rem;
+	color: #666;
+}
+
+.footer-title {
+	font-size: 1rem;
+	font-weight: 600;
+	color: #333;
+	margin-bottom: 1rem;
+	line-height: 1.4;
+}
+
+.footer-column p {
+	margin-bottom: 0.75rem;
+	line-height: 1.6;
+}
+
+.footer-column p:last-child {
+	margin-bottom: 0;
+}
+
+.footer-column strong {
+	color: #333;
+	font-weight: 600;
+}
+
+.footer-column a {
+	color: #0073aa;
+	text-decoration: none;
+	transition: color 0.2s ease;
+}
+
+.footer-column a:hover {
+	color: #005a87;
+	text-decoration: underline;
+}
+
+/**
+ * Footer menu
+ */
+.footer-menu {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+}
+
+.footer-menu li {
+	margin-bottom: 0.5rem;
+}
+
+.footer-menu li:last-child {
+	margin-bottom: 0;
+}
+
+.footer-menu a {
+	color: #0073aa;
+	text-decoration: none;
+	transition: color 0.2s ease;
+}
+
+.footer-menu a:hover {
+	color: #005a87;
+	text-decoration: underline;
+}
+
+/**
+ * Social links
+ */
+.social-links {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.75rem;
+	margin-top: 0.75rem;
+}
+
+.social-link {
+	display: inline-block;
+	padding: 0.5rem 1rem;
+	background-color: #fff;
+	border: 1px solid #e0e0e0;
+	border-radius: 4px;
+	color: #666;
+	text-decoration: none;
+	font-size: 0.875rem;
+	transition: all 0.2s ease;
+}
+
+.social-link:hover {
+	background-color: #0073aa;
+	border-color: #0073aa;
+	color: #fff;
+	text-decoration: none;
+}
+
+/**
+ * Site info (copyright section)
+ */
 .site-info {
 	max-width: 1920px;
 	margin: 0 auto;
@@ -787,6 +904,11 @@ section.upsells.products ul.products li.product {
 	.woocommerce input.button {
 		width: auto;
 	}
+
+	.footer-widget-area {
+		grid-template-columns: repeat(2, 1fr);
+		gap: 2rem;
+	}
 }
 
 /* ==========================================================================
@@ -843,6 +965,11 @@ section.upsells.products ul.products li.product {
 	.woocommerce button.button,
 	.woocommerce input.button {
 		width: auto;
+	}
+
+	.footer-widget-area {
+		grid-template-columns: repeat(4, 1fr);
+		gap: 2rem;
 	}
 }
 
