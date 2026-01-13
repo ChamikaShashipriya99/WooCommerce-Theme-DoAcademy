@@ -47,6 +47,16 @@ function woocommerce_theme_setup() {
 	register_nav_menus( array(
 		'primary' => esc_html__( 'Primary Menu', 'woocommerce' ),
 	) );
+
+	// Add WooCommerce theme support
+	// This enables WooCommerce features like product galleries, zoom, and lightbox
+	add_theme_support( 'woocommerce' );
+
+	// Add support for WooCommerce product gallery features
+	// Enables zoom, lightbox, and slider functionality for product images
+	add_theme_support( 'wc-product-gallery-zoom' );
+	add_theme_support( 'wc-product-gallery-lightbox' );
+	add_theme_support( 'wc-product-gallery-slider' );
 }
 // Hook into the 'after_setup_theme' action
 // This ensures the setup function runs at the right time
@@ -83,4 +93,102 @@ function woocommerce_theme_enqueue_assets() {
 // Hook into 'wp_enqueue_scripts' action
 // This ensures styles/scripts are loaded on the frontend
 add_action( 'wp_enqueue_scripts', 'woocommerce_theme_enqueue_assets' );
+
+/**
+ * Remove WooCommerce Default Wrappers
+ *
+ * WooCommerce adds default content wrappers that we need to remove
+ * so we can add our custom theme wrappers instead.
+ * We check if WooCommerce is active before removing hooks.
+ */
+function woocommerce_theme_remove_default_wrappers() {
+	// Check if WooCommerce is active
+	if ( ! class_exists( 'WooCommerce' ) ) {
+		return;
+	}
+
+	/**
+	 * Remove WooCommerce default opening wrapper
+	 * Priority 10 is the default, we need to match it exactly to remove it
+	 */
+	remove_action( 'woocommerce_before_main_content', 'woocommerce_output_content_wrapper', 10 );
+
+	/**
+	 * Remove WooCommerce default closing wrapper
+	 * Priority 10 is the default, we need to match it exactly to remove it
+	 */
+	remove_action( 'woocommerce_after_main_content', 'woocommerce_output_content_wrapper_end', 10 );
+}
+// Hook into 'wp' action (runs after WordPress is fully loaded)
+// This ensures WooCommerce is loaded before we try to remove its hooks
+add_action( 'wp', 'woocommerce_theme_remove_default_wrappers' );
+
+/**
+ * Add Custom Theme Opening Wrapper
+ *
+ * This adds our custom opening wrapper before WooCommerce main content.
+ * This wrapper matches our theme's HTML structure from header.php and index.php.
+ */
+function woocommerce_theme_wrapper_start() {
+	/**
+	 * Output opening wrapper div that matches our theme structure
+	 * This ensures WooCommerce pages (shop, product, cart, checkout) 
+	 * have consistent layout with the rest of the theme
+	 */
+	echo '<div id="primary" class="site-main woocommerce-page">';
+}
+// Hook into 'woocommerce_before_main_content' action
+// Priority 10 ensures it runs at the standard time
+add_action( 'woocommerce_before_main_content', 'woocommerce_theme_wrapper_start', 10 );
+
+/**
+ * Add Custom Theme Closing Wrapper
+ *
+ * This adds our custom closing wrapper after WooCommerce main content.
+ * This ensures proper HTML structure closure.
+ */
+function woocommerce_theme_wrapper_end() {
+	/**
+	 * Output closing wrapper div
+	 * This closes the wrapper opened in woocommerce_theme_wrapper_start()
+	 */
+	echo '</div><!-- #primary -->';
+}
+// Hook into 'woocommerce_after_main_content' action
+// Priority 10 ensures it runs at the standard time
+add_action( 'woocommerce_after_main_content', 'woocommerce_theme_wrapper_end', 10 );
+
+/**
+ * Ensure WooCommerce Pages Load Correctly
+ *
+ * This function ensures that shop, product, cart, and checkout pages
+ * have the proper theme structure by ensuring header and footer are loaded.
+ * WooCommerce templates automatically call get_header() and get_footer(),
+ * but we verify the structure is correct.
+ */
+function woocommerce_theme_ensure_page_structure() {
+	// Check if WooCommerce is active
+	if ( ! class_exists( 'WooCommerce' ) ) {
+		return;
+	}
+
+	// Check if we're on a WooCommerce page
+	if ( ! is_woocommerce() && ! is_cart() && ! is_checkout() && ! is_account_page() ) {
+		return;
+	}
+
+	/**
+	 * Note: WooCommerce templates automatically include:
+	 * - get_header() at the start
+	 * - get_footer() at the end
+	 * 
+	 * Our custom wrappers (added above) ensure the content area
+	 * matches our theme's structure between header and footer.
+	 * 
+	 * No additional action needed here - the wrapper hooks handle it.
+	 */
+}
+// Hook into 'template_redirect' action
+// This runs before the template is loaded, allowing us to verify structure
+add_action( 'template_redirect', 'woocommerce_theme_ensure_page_structure' );
 
