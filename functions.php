@@ -192,3 +192,53 @@ function woocommerce_theme_ensure_page_structure() {
 // This runs before the template is loaded, allowing us to verify structure
 add_action( 'template_redirect', 'woocommerce_theme_ensure_page_structure' );
 
+/**
+ * Remove Sidebar Support
+ *
+ * This function removes sidebar/widget area support from the theme.
+ * It unregisters default WordPress sidebars to prevent them from displaying.
+ */
+function woocommerce_theme_remove_sidebars() {
+	// Unregister default WordPress sidebars
+	unregister_sidebar( 'sidebar-1' );
+	unregister_sidebar( 'sidebar-2' );
+	
+	// Unregister WooCommerce sidebars if they exist
+	if ( function_exists( 'is_woocommerce' ) ) {
+		unregister_sidebar( 'shop-sidebar' );
+		unregister_sidebar( 'woocommerce-sidebar' );
+	}
+}
+// Hook into 'widgets_init' action with high priority to remove sidebars
+add_action( 'widgets_init', 'woocommerce_theme_remove_sidebars', 99 );
+
+/**
+ * Remove WooCommerce Sidebar Hook
+ *
+ * This function removes the WooCommerce sidebar action hook
+ * that displays the sidebar on shop and product pages.
+ */
+function woocommerce_theme_remove_woocommerce_sidebar() {
+	// Check if WooCommerce is active
+	if ( ! class_exists( 'WooCommerce' ) ) {
+		return;
+	}
+	
+	// Remove WooCommerce sidebar hook
+	remove_action( 'woocommerce_sidebar', 'woocommerce_get_sidebar', 10 );
+}
+// Hook into 'wp' action to ensure WooCommerce is loaded
+add_action( 'wp', 'woocommerce_theme_remove_woocommerce_sidebar' );
+
+/**
+ * Disable Sidebar Display
+ *
+ * This function prevents any sidebar from being displayed
+ * by returning false for is_active_sidebar checks.
+ */
+function woocommerce_theme_disable_sidebar_display( $is_active_sidebar, $index ) {
+	return false;
+}
+// Filter to disable all sidebars
+add_filter( 'is_active_sidebar', 'woocommerce_theme_disable_sidebar_display', 10, 2 );
+

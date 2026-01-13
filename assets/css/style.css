@@ -1035,3 +1035,42 @@ section.upsells.products ul.products li.product {
 	}
 }
 
+/* ==========================================================================
+   Sidebar Removal
+   ========================================================================== */
+
+/**
+ * Hide all sidebars and widget areas
+ * This ensures no sidebars are displayed on any page
+ */
+#secondary,
+.sidebar,
+.widget-area,
+aside,
+.widget,
+#sidebar,
+.sidebar-container,
+.woocommerce-sidebar,
+.shop-sidebar,
+.widgets-area,
+.widget-area-wrapper,
+aside.sidebar,
+div.sidebar,
+section.sidebar,
+main aside,
+.content-area + aside,
+.site-content aside,
+.woocommerce #secondary,
+.woocommerce .sidebar,
+body .sidebar,
+body aside:not(.site-footer),
+body #secondary {
+	display: none !important;
+	visibility: hidden !important;
+	width: 0 !important;
+	height: 0 !important;
+	overflow: hidden !important;
+	margin: 0 !important;
+	padding: 0 !important;
+}
+
