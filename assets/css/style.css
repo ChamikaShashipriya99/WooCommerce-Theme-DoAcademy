@@ -352,14 +352,96 @@ article:last-child {
  * Products Grid Container
  * Uses CSS Grid for responsive product layout
  * Mobile-first: 1 column, then 2, then 3+ columns
+ * Applies to shop pages, related products, upsells, etc.
  */
-.woocommerce ul.products {
+.woocommerce ul.products,
+.woocommerce .related.products ul.products,
+.woocommerce .upsells.products ul.products,
+.woocommerce .cross-sells ul.products {
 	list-style: none;
 	margin: 0;
 	padding: 0;
-	display: grid;
+	display: grid !important;
 	grid-template-columns: 1fr;
 	gap: 1.5rem;
+	width: 100%;
+}
+
+/**
+ * Related Products Section
+ * Ensures proper spacing and layout for related products
+ */
+.woocommerce .related.products,
+.woocommerce .upsells.products {
+	margin-top: 3rem;
+	padding-top: 2rem;
+	border-top: 1px solid #e0e0e0;
+	clear: both;
+}
+
+.woocommerce .related.products h2,
+.woocommerce .upsells.products h2 {
+	font-size: 1.5rem;
+	font-weight: 600;
+	margin-bottom: 1.5rem;
+	color: #333;
+}
+
+/**
+ * Ensure related products container doesn't have conflicting styles
+ * Target all possible WooCommerce related products selectors
+ */
+.woocommerce .related.products ul,
+.woocommerce .upsells.products ul,
+.woocommerce .related.products ul.products,
+.woocommerce .upsells.products ul.products,
+section.related.products ul.products,
+section.upsells.products ul.products,
+.woocommerce-page .related.products ul,
+.woocommerce-page .upsells.products ul {
+	display: grid !important;
+	list-style: none !important;
+	margin: 0 !important;
+	padding: 0 !important;
+	width: 100% !important;
+	max-width: 100% !important;
+	grid-template-columns: 1fr !important;
+	gap: 1.5rem !important;
+	clear: both !important;
+}
+
+/**
+ * Ensure related products section container doesn't constrain width
+ */
+.woocommerce .related.products,
+.woocommerce .upsells.products,
+section.related.products,
+section.upsells.products,
+.woocommerce-page .related.products,
+.woocommerce-page .upsells.products {
+	width: 100% !important;
+	max-width: 100% !important;
+	clear: both;
+	overflow: visible !important;
+}
+
+/**
+ * Override any inline styles or WooCommerce defaults
+ * Remove any float or display properties that might interfere
+ */
+.woocommerce .related.products ul li.product,
+.woocommerce .upsells.products ul li.product,
+.woocommerce .related.products ul.products li.product,
+.woocommerce .upsells.products ul.products li.product,
+section.related.products ul.products li.product,
+section.upsells.products ul.products li.product {
+	width: 100% !important;
+	max-width: 100% !important;
+	float: none !important;
+	display: flex !important;
+	flex-direction: column;
+	margin: 0 !important;
+	clear: none !important;
 }
 
 /**
@@ -685,9 +767,15 @@ article:last-child {
 		padding: 2rem 1.5rem;
 	}
 
-	.woocommerce ul.products {
-		grid-template-columns: repeat(2, 1fr);
-		gap: 2rem;
+	.woocommerce ul.products,
+	.woocommerce .related.products ul.products,
+	.woocommerce .upsells.products ul.products,
+	.woocommerce .related.products ul,
+	.woocommerce .upsells.products ul,
+	section.related.products ul.products,
+	section.upsells.products ul.products {
+		grid-template-columns: repeat(2, 1fr) !important;
+		gap: 2rem !important;
 	}
 
 	.woocommerce ul.products li.product .product-info {
@@ -740,9 +828,15 @@ article:last-child {
 		padding: 2rem 1.5rem;
 	}
 
-	.woocommerce ul.products {
-		grid-template-columns: repeat(3, 1fr);
-		gap: 2rem;
+	.woocommerce ul.products,
+	.woocommerce .related.products ul.products,
+	.woocommerce .upsells.products ul.products,
+	.woocommerce .related.products ul,
+	.woocommerce .upsells.products ul,
+	section.related.products ul.products,
+	section.upsells.products ul.products {
+		grid-template-columns: repeat(3, 1fr) !important;
+		gap: 2rem !important;
 	}
 
 	.woocommerce a.button,
@@ -754,22 +848,40 @@ article:last-child {
 
 /* Desktop Large: 1366px+ (Laptop) - 3 columns maintained */
 @media (min-width: 1366px) {
-	.woocommerce ul.products {
-		grid-template-columns: repeat(3, 1fr);
+	.woocommerce ul.products,
+	.woocommerce .related.products ul.products,
+	.woocommerce .upsells.products ul.products,
+	.woocommerce .related.products ul,
+	.woocommerce .upsells.products ul,
+	section.related.products ul.products,
+	section.upsells.products ul.products {
+		grid-template-columns: repeat(3, 1fr) !important;
 	}
 }
 
 /* Desktop XL: 1440px+ (MacBook 13") - 4 columns */
 @media (min-width: 1440px) {
-	.woocommerce ul.products {
-		grid-template-columns: repeat(4, 1fr);
+	.woocommerce ul.products,
+	.woocommerce .related.products ul.products,
+	.woocommerce .upsells.products ul.products,
+	.woocommerce .related.products ul,
+	.woocommerce .upsells.products ul,
+	section.related.products ul.products,
+	section.upsells.products ul.products {
+		grid-template-columns: repeat(4, 1fr) !important;
 	}
 }
 
 /* Desktop XXL: 1680px+ (22" Desktop) - 4 columns maintained */
 @media (min-width: 1680px) {
-	.woocommerce ul.products {
-		grid-template-columns: repeat(4, 1fr);
+	.woocommerce ul.products,
+	.woocommerce .related.products ul.products,
+	.woocommerce .upsells.products ul.products,
+	.woocommerce .related.products ul,
+	.woocommerce .upsells.products ul,
+	section.related.products ul.products,
+	section.upsells.products ul.products {
+		grid-template-columns: repeat(4, 1fr) !important;
 	}
 }
 
@@ -784,8 +896,14 @@ article:last-child {
 		margin-right: auto;
 	}
 
-	.woocommerce ul.products {
-		grid-template-columns: repeat(4, 1fr);
+	.woocommerce ul.products,
+	.woocommerce .related.products ul.products,
+	.woocommerce .upsells.products ul.products,
+	.woocommerce .related.products ul,
+	.woocommerce .upsells.products ul,
+	section.related.products ul.products,
+	section.upsells.products ul.products {
+		grid-template-columns: repeat(4, 1fr) !important;
 		max-width: 1920px;
 	}
 }
