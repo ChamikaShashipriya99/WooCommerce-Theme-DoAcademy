@@ -54,15 +54,15 @@
 					?>
 					<p>
 						<strong><?php esc_html_e( 'Email:', 'woocommerce' ); ?></strong><br>
-						<a href="mailto:info@example.com">info@example.com</a>
+						<a href="mailto:chamikashashipriya3@gmail.com">chamikashashipriya3@gmail.com</a>
 					</p>
 					<p>
 						<strong><?php esc_html_e( 'Phone:', 'woocommerce' ); ?></strong><br>
-						<a href="tel:+1234567890">+1 (234) 567-890</a>
+						<a href="tel:+94704120358">+94704120358</a>
 					</p>
 					<p>
 						<strong><?php esc_html_e( 'Address:', 'woocommerce' ); ?></strong><br>
-						<?php esc_html_e( '123 Store Street, City, State 12345', 'woocommerce' ); ?>
+						<?php esc_html_e( 'Malabe, Colombo, Sri Lanka', 'woocommerce' ); ?>
 					</p>
 				</div>
 
@@ -93,12 +93,7 @@
 				</a>
 				<?php esc_html_e( '. All rights reserved.', 'woocommerce' ); ?>
 			</p>
-			<p>
-				<?php
-				/* translators: %s: Theme name */
-				printf( esc_html__( 'Theme: %s', 'woocommerce' ), 'WooCommerce' );
-				?>
-			</p>
+			<?php esc_html_e( 'Made By Chamika Shashipriya At DoAcademy', 'woocommerce' ); ?>
 		</div><!-- .site-info -->
 	</footer><!-- #colophon -->
 </div><!-- #page -->

@@ -1074,3 +1074,85 @@ body #secondary {
 	padding: 0 !important;
 }
 
+/* Product Origin Badge Styles - Professional Design */
+/* Ensure product item and image container have relative positioning for absolute badge placement */
+.woocommerce ul.products li.product,
+.woocommerce-page ul.products li.product {
+	position: relative;
+}
+
+.woocommerce ul.products li.product a.woocommerce-LoopProduct-link,
+.woocommerce-page ul.products li.product a.woocommerce-LoopProduct-link,
+.woocommerce ul.products li.product .woocommerce-loop-product__link,
+.woocommerce-page ul.products li.product .woocommerce-loop-product__link {
+	position: relative;
+	display: block;
+}
+
+.product-origin-badge-wrapper {
+	position: absolute;
+	top: 12px;
+	right: 12px;
+	z-index: 30 !important;
+	display: block !important;
+	pointer-events: none;
+}
+
+/* Ensure badge appears over product image area - multiple selectors for compatibility */
+.woocommerce ul.products li.product .product-origin-badge-wrapper,
+.woocommerce-page ul.products li.product .product-origin-badge-wrapper,
+.woocommerce ul.products li.product a .product-origin-badge-wrapper,
+.woocommerce-page ul.products li.product a .product-origin-badge-wrapper {
+	position: absolute !important;
+	top: 12px !important;
+	right: 12px !important;
+	z-index: 30 !important;
+	display: block !important;
+}
+
+.product-origin-badge {
+	display: inline-block !important;
+	padding: 7px 14px;
+	font-size: 11px;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+	border-radius: 20px;
+	color: #fff !important;
+	background: linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0) 100%);
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15), 0 1px 3px rgba(0, 0, 0, 0.1);
+	line-height: 1.3;
+	pointer-events: auto;
+	white-space: nowrap;
+	transition: all 0.3s ease;
+	border: 1px solid rgba(255, 255, 255, 0.2);
+	backdrop-filter: blur(4px);
+	-webkit-backdrop-filter: blur(4px);
+}
+
+/* Hover effect for better interactivity */
+.product-origin-badge:hover {
+	transform: translateY(-1px);
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2), 0 2px 4px rgba(0, 0, 0, 0.15);
+}
+
+/* Local badge - Professional green gradient */
+.product-origin-badge--local {
+	background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%) !important;
+	border-color: rgba(255, 255, 255, 0.25);
+}
+
+.product-origin-badge--local:hover {
+	background: linear-gradient(135deg, #27ae60 0%, #229954 100%) !important;
+}
+
+/* Imported badge - Professional blue gradient */
+.product-origin-badge--imported {
+	background: linear-gradient(135deg, #3498db 0%, #2980b9 100%) !important;
+	border-color: rgba(255, 255, 255, 0.25);
+}
+
+.product-origin-badge--imported:hover {
+	background: linear-gradient(135deg, #2980b9 0%, #2471a3 100%) !important;
+}
+
