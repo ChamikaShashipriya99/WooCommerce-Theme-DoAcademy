@@ -79,9 +79,19 @@ function woocommerce_theme_enqueue_assets() {
 	// Get the theme version from style.css (for cache busting)
 	$theme_version = wp_get_theme()->get( 'Version' );
 
+	// Enqueue Font Awesome 5.15.4
+	// This loads Font Awesome icons library from CDN
+	// Used for cart icon and other icons throughout the theme
+	wp_enqueue_style(
+		'font-awesome',
+		'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css',
+		array(), // No dependencies
+		'5.15.4' // Version number
+	);
+
 	// Prepare dependencies array
 	// Add WooCommerce stylesheet as dependency if WooCommerce is active
-	$dependencies = array();
+	$dependencies = array( 'font-awesome' ); // Theme style depends on Font Awesome
 	if ( class_exists( 'WooCommerce' ) ) {
 		$dependencies[] = 'woocommerce-general';
 	}
@@ -91,7 +101,7 @@ function woocommerce_theme_enqueue_assets() {
 	wp_enqueue_style(
 		'woocommerce-theme-style',                    // Handle (unique identifier)
 		get_template_directory_uri() . '/assets/css/style.css', // Path to stylesheet
-		$dependencies,                                // Dependencies (WooCommerce if active)
+		$dependencies,                                // Dependencies (Font Awesome and WooCommerce if active)
 		$theme_version                                // Version (for cache busting)
 	);
 
