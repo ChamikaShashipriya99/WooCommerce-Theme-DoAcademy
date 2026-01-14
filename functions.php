@@ -269,6 +269,204 @@ function woocommerce_theme_shop_poster_banner() {
 add_action( 'woocommerce_before_shop_loop', 'woocommerce_theme_shop_poster_banner', 5 );
 
 /**
+ * Checkout: Add Business Type and VAT Number Fields
+ *
+ * Uses woocommerce_checkout_fields to add:
+ * - billing_business_type (select: Individual, Company)
+ * - billing_vat_number (text)
+ *
+ * @param array $fields Existing checkout fields grouped by section.
+ * @return array Modified checkout fields.
+ */
+function woocommerce_theme_custom_checkout_fields( $fields ) {
+	// Ensure billing section exists.
+	if ( ! isset( $fields['billing'] ) || ! is_array( $fields['billing'] ) ) {
+		$fields['billing'] = array();
+	}
+
+	// Business Type dropdown.
+	$fields['billing']['billing_business_type'] = array(
+		'type'        => 'select',
+		'label'       => __( 'Business Type', 'woocommerce' ),
+		'placeholder' => __( 'Select business type', 'woocommerce' ),
+		'required'    => false,
+		'options'     => array(
+			''           => __( 'Select business type', 'woocommerce' ),
+			'individual' => __( 'Individual', 'woocommerce' ),
+			'company'    => __( 'Company', 'woocommerce' ),
+		),
+		'class'       => array( 'form-row-wide' ),
+		'priority'    => 115, // After standard billing fields.
+	);
+
+	// VAT Number text field.
+	$fields['billing']['billing_vat_number'] = array(
+		'type'        => 'text',
+		'label'       => __( 'VAT Number', 'woocommerce' ),
+		'placeholder' => __( 'Enter VAT number (if applicable)', 'woocommerce' ),
+		'required'    => false,
+		'class'       => array( 'form-row-wide' ),
+		'priority'    => 116,
+		'clear'       => true,
+	);
+
+	return $fields;
+}
+add_filter( 'woocommerce_checkout_fields', 'woocommerce_theme_custom_checkout_fields' );
+
+/**
+ * Checkout: Save Business Type and VAT Number to Order Meta
+ *
+ * @param int   $order_id Order ID.
+ * @param array $data     Sanitized checkout data.
+ */
+function woocommerce_theme_save_custom_checkout_fields( $order_id, $data ) {
+	if ( isset( $data['billing_business_type'] ) ) {
+		update_post_meta(
+			$order_id,
+			'_billing_business_type',
+			sanitize_text_field( $data['billing_business_type'] )
+		);
+	}
+
+	if ( isset( $data['billing_vat_number'] ) ) {
+		update_post_meta(
+			$order_id,
+			'_billing_vat_number',
+			sanitize_text_field( $data['billing_vat_number'] )
+		);
+	}
+}
+add_action( 'woocommerce_checkout_update_order_meta', 'woocommerce_theme_save_custom_checkout_fields', 10, 2 );
+
+/**
+ * Admin: Display Business Type and VAT Number on Order Edit Screen
+ *
+ * @param WC_Order $order Order object.
+ */
+function woocommerce_theme_admin_order_custom_fields( $order ) {
+	$business_type = get_post_meta( $order->get_id(), '_billing_business_type', true );
+	$vat_number    = get_post_meta( $order->get_id(), '_billing_vat_number', true );
+
+	if ( ! $business_type && ! $vat_number ) {
+		return;
+	}
+
+	echo '<div class="woocommerce-order-data__billing-business-wrapper">';
+
+	if ( $business_type ) {
+		$map = array(
+			'individual' => __( 'Individual', 'woocommerce' ),
+			'company'    => __( 'Company', 'woocommerce' ),
+		);
+
+		$business_type_label = isset( $map[ $business_type ] ) ? $map[ $business_type ] : $business_type;
+
+		echo '<p><strong>' . esc_html__( 'Business Type', 'woocommerce' ) . ':</strong> ' . esc_html( $business_type_label ) . '</p>';
+	}
+
+	if ( $vat_number ) {
+		echo '<p><strong>' . esc_html__( 'VAT Number', 'woocommerce' ) . ':</strong> ' . esc_html( $vat_number ) . '</p>';
+	}
+
+	echo '</div>';
+}
+add_action( 'woocommerce_admin_order_data_after_billing_address', 'woocommerce_theme_admin_order_custom_fields', 10, 1 );
+
+/**
+ * Checkout Blocks: Add Business Type and VAT Number to Checkout block
+ *
+ * This customizes the WooCommerce Checkout block (Store API–based checkout),
+ * so the same fields appear when using the block instead of the classic shortcode.
+ *
+ * @param array $fields Existing Blocks checkout field schema.
+ * @return array Modified field schema.
+ */
+function woocommerce_theme_blocks_checkout_fields( $fields ) {
+	// Ensure billing address field group exists.
+	if ( empty( $fields['billingAddress']['fields'] ) || ! is_array( $fields['billingAddress']['fields'] ) ) {
+		return $fields;
+	}
+
+	$billing_fields = $fields['billingAddress']['fields'];
+
+	// Business Type select field for Blocks checkout.
+	$billing_fields['business_type'] = array(
+		'label'       => __( 'Business Type', 'woocommerce' ),
+		'required'    => false,
+		'type'        => 'select',
+		'placeholder' => __( 'Select business type', 'woocommerce' ),
+		'options'     => array(
+			array(
+				'value' => '',
+				'label' => __( 'Select business type', 'woocommerce' ),
+			),
+			array(
+				'value' => 'individual',
+				'label' => __( 'Individual', 'woocommerce' ),
+			),
+			array(
+				'value' => 'company',
+				'label' => __( 'Company', 'woocommerce' ),
+			),
+		),
+		'priority'    => 115,
+	);
+
+	// VAT Number text field for Blocks checkout.
+	$billing_fields['vat_number'] = array(
+		'label'       => __( 'VAT Number', 'woocommerce' ),
+		'required'    => false,
+		'type'        => 'text',
+		'placeholder' => __( 'Enter VAT number (if applicable)', 'woocommerce' ),
+		'priority'    => 116,
+	);
+
+	$fields['billingAddress']['fields'] = $billing_fields;
+
+	return $fields;
+}
+add_filter( 'woocommerce_blocks_checkout_fields', 'woocommerce_theme_blocks_checkout_fields' );
+
+/**
+ * Checkout Blocks: Save Business Type and VAT Number from Store API request.
+ *
+ * This runs when the Checkout block submits via the Store API.
+ *
+ * @param WC_Order              $order   Order being created/updated.
+ * @param \WP_REST_Request|array $request Request data from the Store API.
+ */
+function woocommerce_theme_blocks_save_checkout_fields( $order, $request ) {
+	// $request can be a WP_REST_Request; normalize to array of params.
+	if ( is_object( $request ) && method_exists( $request, 'get_params' ) ) {
+		$data = $request->get_params();
+	} else {
+		$data = (array) $request;
+	}
+
+	$billing = isset( $data['billing_address'] ) && is_array( $data['billing_address'] )
+		? $data['billing_address']
+		: array();
+
+	if ( isset( $billing['business_type'] ) ) {
+		update_post_meta(
+			$order->get_id(),
+			'_billing_business_type',
+			sanitize_text_field( $billing['business_type'] )
+		);
+	}
+
+	if ( isset( $billing['vat_number'] ) ) {
+		update_post_meta(
+			$order->get_id(),
+			'_billing_vat_number',
+			sanitize_text_field( $billing['vat_number'] )
+		);
+	}
+}
+add_action( 'woocommerce_store_api_checkout_update_order_from_request', 'woocommerce_theme_blocks_save_checkout_fields', 10, 2 );
+
+/**
  * Remove Sidebar Support
  *
  * This function removes sidebar/widget area support from the theme.
