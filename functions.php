@@ -227,6 +227,48 @@ function woocommerce_theme_ensure_page_structure() {
 add_action( 'template_redirect', 'woocommerce_theme_ensure_page_structure' );
 
 /**
+ * Shop Page Poster / Hero Banner
+ *
+ * Outputs a full-width poster-style banner with image at the top of the main shop page.
+ * The image path can be customized by changing the $poster_image_url variable below.
+ */
+function woocommerce_theme_shop_poster_banner() {
+	// Only show on the main shop page
+	if ( ! function_exists( 'is_shop' ) || ! is_shop() ) {
+		return;
+	}
+
+	// Customize the poster image URL here
+	// Replace with your image path: get_template_directory_uri() . '/assets/images/shop-poster.jpg'
+	// Or use an external URL: 'https://example.com/image.jpg'
+	$poster_image_url = get_template_directory_uri() . '/assets/images/shop-poster.jpg';
+
+	?>
+	<section class="shop-hero-banner" aria-label="<?php esc_attr_e( 'Shop highlight', 'woocommerce' ); ?>">
+		<div class="shop-hero-banner__image-wrapper">
+			<img 
+				src="<?php echo esc_url( $poster_image_url ); ?>" 
+				alt="<?php esc_attr_e( 'Shop banner', 'woocommerce' ); ?>" 
+				class="shop-hero-banner__image"
+			/>
+		</div>
+		<div class="shop-hero-banner__inner">
+			<div class="shop-hero-banner__content">
+				<h1 class="shop-hero-banner__title">
+					<?php echo esc_html( get_the_title( wc_get_page_id( 'shop' ) ) ); ?>
+				</h1>
+				<p class="shop-hero-banner__subtitle">
+					<?php esc_html_e( 'Discover our latest deals, best sellers and imported items in one place.', 'woocommerce' ); ?>
+				</p>
+			</div>
+		</div>
+	</section>
+	<?php
+}
+// Display the poster just before the product grid on the shop page.
+add_action( 'woocommerce_before_shop_loop', 'woocommerce_theme_shop_poster_banner', 5 );
+
+/**
  * Remove Sidebar Support
  *
  * This function removes sidebar/widget area support from the theme.
