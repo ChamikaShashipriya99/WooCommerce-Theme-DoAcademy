@@ -581,6 +581,10 @@ function woocommerce_render_mini_cart( $echo = false ) {
 						// Get product name
 						// get_name() returns the product title
 						$product_name = $product->get_name();
+
+						// Build remove-from-cart URL for this cart line item
+						// wc_get_cart_remove_url() returns a nonce-protected URL WooCommerce recognizes.
+						$remove_url = wc_get_cart_remove_url( $cart_item_key );
 						
 						// Get item quantity
 						// $cart_item['quantity'] contains the quantity for this cart item
@@ -592,6 +596,24 @@ function woocommerce_render_mini_cart( $echo = false ) {
 						?>
 						<li class="mini-cart__item" role="listitem">
 							<div class="mini-cart__item-content">
+								<a
+									href="<?php echo esc_url( $remove_url ); ?>"
+									class="remove mini-cart__item-remove"
+									aria-label="<?php echo esc_attr( sprintf( __( 'Remove %s from cart', 'woocommerce' ), $product_name ) ); ?>"
+									title="<?php echo esc_attr__( 'Remove item', 'woocommerce' ); ?>"
+								>
+									<i class="fas fa-times" aria-hidden="true"></i>
+									<span class="screen-reader-text">
+										<?php
+										echo esc_html(
+											sprintf(
+												__( 'Remove %s from cart', 'woocommerce' ),
+												$product_name
+											)
+										);
+										?>
+									</span>
+								</a>
 								<?php
 								// Display product thumbnail
 								// get_image() returns the product image HTML

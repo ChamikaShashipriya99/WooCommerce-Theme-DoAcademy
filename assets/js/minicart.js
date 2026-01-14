@@ -234,6 +234,10 @@
 			var url = settings.url || '';
 			if (url.indexOf('remove_item') !== -1 ||
 				url.indexOf('wc-ajax=remove_item') !== -1 ||
+				url.indexOf('remove_from_cart') !== -1 ||
+				url.indexOf('wc-ajax=remove_from_cart') !== -1 ||
+				url.indexOf('remove_cart_item') !== -1 ||
+				url.indexOf('wc-ajax=remove_cart_item') !== -1 ||
 				url.indexOf('update_cart') !== -1 ||
 				url.indexOf('wc-ajax=update_cart') !== -1 ||
 				url.indexOf('get_refreshed_fragments') !== -1) {

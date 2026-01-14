@@ -1335,6 +1335,32 @@ body #secondary {
 	gap: 1rem;
 }
 
+.mini-cart__item-remove {
+	width: 28px;
+	height: 28px;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: 6px;
+	color: #666;
+	text-decoration: none;
+	flex: 0 0 28px;
+	margin-top: 2px;
+	transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.mini-cart__item-remove:hover,
+.mini-cart__item-remove:focus {
+	background-color: #ffe5e5;
+	color: #b32d2e;
+	outline: none;
+}
+
+.mini-cart__item-remove i {
+	font-size: 14px;
+	line-height: 1;
+}
+
 .mini-cart__item-image {
 	width: 80px;
 	height: 80px;
