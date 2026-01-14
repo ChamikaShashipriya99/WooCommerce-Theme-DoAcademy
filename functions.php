@@ -105,14 +105,16 @@ function woocommerce_theme_enqueue_assets() {
 		$theme_version                                // Version (for cache busting)
 	);
 
-	// Enqueue JavaScript if needed (commented out for minimal theme)
-	// wp_enqueue_script(
-	//     'woocommerce-theme-script',
-	//     get_template_directory_uri() . '/assets/js/minicart.js',
-	//     array(),
-	//     $theme_version,
-	//     true // Load in footer
-	// );
+	// Enqueue JavaScript for mini cart AJAX updates
+	// This script handles AJAX-based cart updates without page reload
+	// jQuery is required as a dependency (WordPress includes jQuery by default)
+	wp_enqueue_script(
+		'woocommerce-minicart-ajax',                    // Handle (unique identifier)
+		get_template_directory_uri() . '/assets/js/minicart.js', // Path to JavaScript file
+		array( 'jquery' ),                               // Dependencies (jQuery is required)
+		$theme_version,                                 // Version (for cache busting)
+		true                                            // Load in footer (better performance)
+	);
 }
 // Hook into 'wp_enqueue_scripts' action
 // This ensures styles/scripts are loaded on the frontend
@@ -500,4 +502,297 @@ function woocommerce_display_product_origin_badge() {
 // This hook automatically runs on shop and category archive pages
 // Badge is positioned absolutely over the product image via CSS
 add_action( 'woocommerce_before_shop_loop_item_title', 'woocommerce_display_product_origin_badge', 3 );
+
+/**
+ * Render Mini Cart HTML
+ *
+ * This function generates the HTML for the mini cart dropdown.
+ * It's used both in the header template and in AJAX fragments.
+ * This ensures consistent HTML structure for both initial page load and AJAX updates.
+ *
+ * @param bool $echo Whether to echo the output or return it. Default false (return).
+ * @return string|void The mini cart HTML if $echo is false, void if $echo is true.
+ */
+function woocommerce_render_mini_cart( $echo = false ) {
+	// Check if WooCommerce is active
+	if ( ! class_exists( 'WooCommerce' ) ) {
+		return '';
+	}
+
+	// Get the cart object
+	// WC()->cart is the global WooCommerce cart instance
+	$cart = WC()->cart;
+
+	// Check if cart exists
+	if ( ! $cart ) {
+		return '';
+	}
+
+	// Get cart item count (even if cart is empty, to show the icon)
+	// get_cart_contents_count() returns the total number of items in cart
+	$cart_count = $cart->get_cart_contents_count();
+
+	// Start output buffering to capture HTML
+	// This allows us to return the HTML as a string
+	ob_start();
+	?>
+
+	<?php
+	// Check if cart has items
+	if ( ! $cart->is_empty() ) :
+		// Get cart total
+		// get_cart_total() returns formatted cart total with currency symbol
+		$cart_total = $cart->get_cart_total();
+		
+		// Get cart items
+		// get_cart() returns an array of cart items with their data
+		$cart_items = $cart->get_cart();
+		?>
+		<div class="mini-cart__dropdown" id="mini-cart-dropdown" role="region" aria-label="<?php esc_attr_e( 'Shopping Cart', 'woocommerce' ); ?>">
+			<div class="mini-cart__header">
+				<h3 class="mini-cart__title">
+					<?php esc_html_e( 'Cart', 'woocommerce' ); ?>
+					<span class="mini-cart__count" id="mini-cart-count-text" aria-label="<?php echo esc_attr( sprintf( _n( '%d item', '%d items', $cart_count, 'woocommerce' ), $cart_count ) ); ?>">
+						(<?php echo esc_html( $cart_count ); ?>)
+					</span>
+				</h3>
+			</div>
+
+			<div class="mini-cart__items" id="mini-cart-items">
+				<ul class="mini-cart__list" role="list" id="mini-cart-list">
+					<?php
+					// Loop through each cart item
+					// Each $cart_item_key is a unique identifier for the item
+					// Each $cart_item contains product data, quantity, and variations
+					foreach ( $cart_items as $cart_item_key => $cart_item ) :
+						// Get the product object from cart item
+						// wc_get_product() retrieves the WC_Product object by product ID
+						$product = wc_get_product( $cart_item['product_id'] );
+						
+						// Skip if product doesn't exist (e.g., deleted product)
+						if ( ! $product ) {
+							continue;
+						}
+						
+						// Get product permalink
+						// get_permalink() returns the URL to view the product
+						$product_permalink = $product->get_permalink();
+						
+						// Get product name
+						// get_name() returns the product title
+						$product_name = $product->get_name();
+						
+						// Get item quantity
+						// $cart_item['quantity'] contains the quantity for this cart item
+						$quantity = $cart_item['quantity'];
+						
+						// Get line subtotal (price for this item * quantity)
+						// get_product_subtotal() returns the subtotal for this line item
+						$line_subtotal = $cart->get_product_subtotal( $product, $cart_item['quantity'] );
+						?>
+						<li class="mini-cart__item" role="listitem">
+							<div class="mini-cart__item-content">
+								<?php
+								// Display product thumbnail
+								// get_image() returns the product image HTML
+								// 'woocommerce_thumbnail' is the image size to use
+								echo $product->get_image( 'woocommerce_thumbnail', array(
+									'alt' => $product_name,
+									'class' => 'mini-cart__item-image',
+								) );
+								?>
+								
+								<div class="mini-cart__item-details">
+									<h4 class="mini-cart__item-title">
+										<a href="<?php echo esc_url( $product_permalink ); ?>" class="mini-cart__item-link">
+											<?php echo esc_html( $product_name ); ?>
+										</a>
+									</h4>
+									
+									<?php
+									// Display product variation attributes if it's a variable product
+									// wc_get_formatted_cart_item_data() formats variation attributes nicely
+									// Returns formatted string like "Color: Red, Size: Large"
+									$variation_data = wc_get_formatted_cart_item_data( $cart_item );
+									if ( $variation_data ) {
+										echo '<div class="mini-cart__item-variation">' . $variation_data . '</div>';
+									}
+									?>
+									
+									<div class="mini-cart__item-meta">
+										<span class="mini-cart__item-quantity">
+											<?php
+											// Display quantity
+											// printf() formats the string with the quantity number
+											// esc_html() ensures safe output
+											printf(
+												esc_html__( 'Quantity: %d', 'woocommerce' ),
+												$quantity
+											);
+											?>
+										</span>
+										<span class="mini-cart__item-price">
+											<?php echo $line_subtotal; // Already escaped by WooCommerce ?>
+										</span>
+									</div>
+								</div>
+							</div>
+						</li>
+						<?php
+					endforeach;
+					?>
+				</ul>
+			</div>
+
+			<div class="mini-cart__footer" id="mini-cart-footer">
+				<div class="mini-cart__total">
+					<strong class="mini-cart__total-label">
+						<?php esc_html_e( 'Total:', 'woocommerce' ); ?>
+					</strong>
+					<span class="mini-cart__total-amount" id="mini-cart-total">
+						<?php echo $cart_total; // Already escaped by WooCommerce ?>
+					</span>
+				</div>
+
+				<div class="mini-cart__actions">
+					<?php
+					// Get cart page URL
+					// wc_get_cart_url() returns the URL to the cart page
+					$cart_url = wc_get_cart_url();
+					
+					// Get checkout page URL
+					// wc_get_checkout_url() returns the URL to the checkout page
+					$checkout_url = wc_get_checkout_url();
+					?>
+					<a href="<?php echo esc_url( $cart_url ); ?>" class="mini-cart__button mini-cart__button--view-cart">
+						<?php esc_html_e( 'View Cart', 'woocommerce' ); ?>
+					</a>
+					<a href="<?php echo esc_url( $checkout_url ); ?>" class="mini-cart__button mini-cart__button--checkout">
+						<?php esc_html_e( 'Checkout', 'woocommerce' ); ?>
+					</a>
+				</div>
+			</div>
+		</div>
+		<?php
+	else :
+		// Display empty cart message in dropdown
+		?>
+		<div class="mini-cart__dropdown mini-cart__dropdown--empty" id="mini-cart-dropdown" role="region" aria-label="<?php esc_attr_e( 'Shopping Cart', 'woocommerce' ); ?>">
+			<div class="mini-cart__empty-message" id="mini-cart-empty">
+				<p><?php esc_html_e( 'Your cart is empty.', 'woocommerce' ); ?></p>
+			</div>
+		</div>
+		<?php
+	endif;
+
+	// Get the buffered output
+	$output = ob_get_clean();
+
+	// Echo or return based on parameter
+	if ( $echo ) {
+		echo $output; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+		return;
+	}
+
+	return $output;
+}
+
+/**
+ * AJAX Cart Fragments
+ *
+ * This function is hooked into woocommerce_add_to_cart_fragments filter.
+ * When a product is added to cart via AJAX, WooCommerce sends a request
+ * to get updated HTML fragments. This function returns the updated mini cart HTML
+ * and cart count so JavaScript can update the page without reloading.
+ *
+ * Flow:
+ * 1. User clicks "Add to Cart" button
+ * 2. WooCommerce AJAX handler processes the request
+ * 3. This filter is called to get updated fragments
+ * 4. Returns array with updated HTML for cart count and cart dropdown
+ * 5. JavaScript receives fragments and updates DOM
+ *
+ * @param array $fragments Array of fragments to update. Key is CSS selector, value is HTML.
+ * @return array Updated fragments array with mini cart HTML and cart count.
+ */
+function woocommerce_ajax_mini_cart_fragments( $fragments ) {
+	// Check if WooCommerce is active
+	if ( ! class_exists( 'WooCommerce' ) ) {
+		return $fragments;
+	}
+
+	// Get the cart object
+	$cart = WC()->cart;
+
+	// Check if cart exists
+	if ( ! $cart ) {
+		return $fragments;
+	}
+
+	// Get cart item count
+	// This will be used to update the cart count badge
+	$cart_count = $cart->get_cart_contents_count();
+
+	// Add/update the cart count fragment
+	// The key '.mini-cart__trigger-count' is the CSS selector for the cart count element
+	// WooCommerce will find this element and replace its innerHTML with the new value
+	$fragments['.mini-cart__trigger-count'] = '<span class="mini-cart__trigger-count" aria-label="' . esc_attr( sprintf( _n( '%d item in cart', '%d items in cart', $cart_count, 'woocommerce' ), $cart_count ) ) . '">' . esc_html( $cart_count ) . '</span>';
+
+	// Add/update the mini cart dropdown fragment
+	// The key '#mini-cart-dropdown' is the ID selector for the cart dropdown
+	// This replaces the entire cart dropdown with updated HTML
+	$fragments['#mini-cart-dropdown'] = woocommerce_render_mini_cart( false );
+
+	// Return the updated fragments array
+	// WooCommerce will send this to JavaScript as JSON
+	return $fragments;
+}
+// Hook into WooCommerce add to cart fragments filter
+// This filter is called whenever AJAX add-to-cart is performed
+// Priority 10 is standard, accepts 1 parameter (fragments array)
+add_filter( 'woocommerce_add_to_cart_fragments', 'woocommerce_ajax_mini_cart_fragments', 10, 1 );
+
+/**
+ * Add Mini Cart Fragments to Cart Updates
+ *
+ * This function ensures that mini cart fragments are included when cart is updated
+ * (items removed, quantities changed, etc.), not just when items are added.
+ * WooCommerce uses different filters for different operations, so we need to hook into
+ * multiple fragment filters to ensure updates work in all scenarios.
+ *
+ * @param array $fragments Array of fragments to update. Key is CSS selector, value is HTML.
+ * @return array Updated fragments array with mini cart HTML and cart count.
+ */
+function woocommerce_ajax_mini_cart_fragments_cart_updated( $fragments ) {
+	// Reuse the same fragment function for consistency
+	// This ensures cart updates (removals, quantity changes) also update the mini cart
+	return woocommerce_ajax_mini_cart_fragments( $fragments );
+}
+// Hook into WooCommerce cart update fragments filter
+// This is called when cart is updated via AJAX (removals, quantity changes)
+// Priority 10 is standard, accepts 1 parameter (fragments array)
+add_filter( 'woocommerce_update_order_review_fragments', 'woocommerce_ajax_mini_cart_fragments_cart_updated', 10, 1 );
+
+/**
+ * Ensure Fragments Are Always Included in get_refreshed_fragments
+ *
+ * This function ensures our mini cart fragments are always included when
+ * WooCommerce's get_refreshed_fragments endpoint is called. This endpoint
+ * is used to refresh fragments after cart updates (removals, quantity changes).
+ * By hooking into the filter that processes this endpoint, we ensure our
+ * fragments are always available.
+ *
+ * Note: The woocommerce_add_to_cart_fragments filter is already hooked,
+ * but we also ensure it works for the get_refreshed_fragments endpoint
+ * which is called after cart removals.
+ */
+function woocommerce_ensure_fragments_on_refresh() {
+	// The woocommerce_add_to_cart_fragments filter is already registered
+	// and will be called by WooCommerce's get_refreshed_fragments endpoint
+	// No additional action needed here - the filter handles it
+}
+// This is just a placeholder - the actual filter is already registered above
+// WooCommerce's get_refreshed_fragments endpoint automatically calls
+// woocommerce_add_to_cart_fragments filter, so our fragments will be included
+
 
