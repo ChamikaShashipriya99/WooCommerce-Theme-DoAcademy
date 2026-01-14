@@ -628,7 +628,7 @@ section.upsells.products ul.products li.product {
  * Contains title, price, and add to cart button
  */
 .woocommerce ul.products li.product .product-info {
-	padding: 1rem;
+	padding: 0.8rem 1.4rem; /* extra left/right padding for text inside cards */
 	flex: 1;
 	display: flex;
 	flex-direction: column;
@@ -682,9 +682,8 @@ section.upsells.products ul.products li.product {
 
 /**
  * Product Badges (Sale, New, Featured, etc.)
- * Positioned absolutely in top-left corner of product image
+ * Default badge positioning – single product pages keep WooCommerce style
  */
-.woocommerce ul.products li.product .onsale,
 .woocommerce span.onsale {
 	position: absolute;
 	top: 0.75rem;
@@ -699,6 +698,38 @@ section.upsells.products ul.products li.product {
 	letter-spacing: 0.5px;
 	z-index: 10;
 	line-height: 1.2;
+}
+
+/**
+ * Product Cards: SALE label – distinct pill style just for grid cards
+ */
+.woocommerce ul.products li.product .onsale {
+	position: absolute;
+	top: 12px;
+	left: 12px;
+	z-index: 20;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	padding: 6px 14px;
+	min-width: 60px;
+	border-radius: 999px;
+	font-size: 11px;
+	font-weight: 700;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: #ffffff;
+	background: linear-gradient(135deg, #ff6a00 0%, #ff3d3d 50%, #ff0080 100%);
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
+	border: 1px solid rgba(255, 255, 255, 0.35);
+	backdrop-filter: blur(3px);
+	-webkit-backdrop-filter: blur(3px);
+}
+
+.woocommerce ul.products li.product:hover .onsale {
+	box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+	transform: translateY(-1px);
+	transition: all 0.25s ease;
 }
 
 /**
@@ -762,8 +793,36 @@ section.upsells.products ul.products li.product {
 	width: 100%;
 }
 
+/**
+ * Product Cards: primary button styling (Add to cart, Select options, etc.)
+ * Only affects buttons inside product cards, builds on global button styles
+ */
 .woocommerce ul.products li.product .button {
 	margin-top: auto;
+	position: relative;
+	overflow: hidden;
+	border-radius: 999px;
+	padding: 0.7rem 1.75rem;
+	font-size: 0.9rem;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.06em;
+	background: linear-gradient(135deg, #0073aa 0%, #005a87 100%);
+	border-color: transparent;
+	color: #ffffff;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 0.4rem;
+	box-shadow: 0 6px 14px rgba(0, 0, 0, 0.16);
+}
+
+.woocommerce ul.products li.product .button:hover {
+	background: linear-gradient(135deg, #005a87 0%, #00486b 100%);
+	transform: translateY(-1px);
+	box-shadow: 0 8px 18px rgba(0, 0, 0, 0.2);
+	color: #ffffff;
+	text-decoration: none;
 }
 
 .woocommerce a.button:hover,
@@ -863,7 +922,7 @@ section.upsells.products ul.products li.product {
 }
 
 .woocommerce ul.products li.product .product-info {
-	padding: 0.75rem;
+	padding: 0.75rem 1.4rem;
 }
 
 /* ==========================================================================
@@ -1111,8 +1170,9 @@ body #secondary {
 
 .product-origin-badge-wrapper {
 	position: absolute;
-	top: 12px;
+	top: 70%;
 	right: 12px;
+	transform: translateY(-50%);
 	z-index: 30 !important;
 	display: block !important;
 	pointer-events: none;
@@ -1124,8 +1184,9 @@ body #secondary {
 .woocommerce ul.products li.product a .product-origin-badge-wrapper,
 .woocommerce-page ul.products li.product a .product-origin-badge-wrapper {
 	position: absolute !important;
-	top: 12px !important;
+	top: 70% !important;
 	right: 12px !important;
+	transform: translateY(-50%) !important;
 	z-index: 30 !important;
 	display: block !important;
 }
