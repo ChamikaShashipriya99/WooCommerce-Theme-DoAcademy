@@ -607,6 +607,336 @@ function woocommerce_theme_apply_automatic_discount( $cart ) {
 add_action( 'woocommerce_cart_calculate_fees', 'woocommerce_theme_apply_automatic_discount', 10, 1 );
 
 /**
+ * Custom Shipping Method: Country-Based Shipping Rates
+ *
+ * This class creates a custom WooCommerce shipping method that calculates
+ * shipping rates dynamically based on the customer's country.
+ *
+ * Class Structure:
+ * - Extends WC_Shipping_Method (WooCommerce base shipping class)
+ * - Implements calculate_shipping() for dynamic rate calculation
+ * - Provides admin settings for configuring country-specific rates
+ * - Integrates seamlessly with WooCommerce shipping zones
+ *
+ * Usage:
+ * 1. Enable in WooCommerce > Settings > Shipping
+ * 2. Configure rates per country in shipping method settings
+ * 3. Rates automatically apply based on customer's shipping country
+ */
+if ( ! class_exists( 'WC_Theme_Custom_Shipping_Method' ) ) {
+	class WC_Theme_Custom_Shipping_Method extends WC_Shipping_Method {
+
+		/**
+		 * Constructor: Initialize Shipping Method
+		 *
+		 * Sets up the shipping method with ID, title, description, and default settings.
+		 * This runs when WooCommerce loads shipping methods.
+		 *
+		 * @param int $instance_id Instance ID for this shipping method instance.
+		 */
+		public function __construct( $instance_id = 0 ) {
+			// Call parent constructor to initialize base shipping method
+			// This sets up core WooCommerce shipping functionality
+			parent::__construct( $instance_id );
+
+			// Set unique shipping method ID
+			// This ID is used internally by WooCommerce to identify the method
+			$this->id = 'theme_custom_shipping';
+
+			// Set shipping method title (displayed to customers)
+			// This appears in checkout as the shipping option name
+			$this->method_title = __( 'Custom Country Shipping', 'woocommerce' );
+
+			// Set shipping method description (shown in admin)
+			// This helps admins understand what the shipping method does
+			$this->method_description = __( 'Custom shipping method with country-based rates. Configure rates for different countries in the settings below.', 'woocommerce' );
+
+			// Enable admin settings panel
+			// This allows admins to configure shipping rates in WooCommerce settings
+			$this->enabled = isset( $this->settings['enabled'] ) ? $this->settings['enabled'] : 'yes';
+
+			// Set default title (displayed to customers at checkout)
+			$this->title = isset( $this->settings['title'] ) ? $this->settings['title'] : __( 'Custom Shipping', 'woocommerce' );
+
+			// Initialize the shipping method
+			// This loads settings and prepares the method for use
+			$this->init();
+		}
+
+		/**
+		 * Initialize Shipping Method Settings
+		 *
+		 * Sets up default settings and loads saved configuration.
+		 * This method is called from the constructor.
+		 */
+		public function init() {
+			// Load settings from database
+			// WooCommerce automatically saves/loads settings using the method ID
+			$this->init_form_fields();
+			$this->init_settings();
+
+			// Save settings when admin updates them
+			// This hook fires when settings are saved in WooCommerce admin
+			add_action( 'woocommerce_update_options_shipping_' . $this->id, array( $this, 'process_admin_options' ) );
+		}
+
+		/**
+		 * Define Admin Settings Form Fields
+		 *
+		 * Creates the settings form that appears in WooCommerce > Settings > Shipping.
+		 * Admins can configure title, enabled status, and country-specific rates here.
+		 */
+		public function init_form_fields() {
+			// Define default settings fields
+			// These fields appear in the shipping method settings panel
+			$this->form_fields = array(
+				'enabled' => array(
+					'title'   => __( 'Enable/Disable', 'woocommerce' ),
+					'type'    => 'checkbox',
+					'label'   => __( 'Enable this shipping method', 'woocommerce' ),
+					'default' => 'yes',
+				),
+				'title' => array(
+					'title'       => __( 'Method Title', 'woocommerce' ),
+					'type'        => 'text',
+					'description' => __( 'This controls the title which the user sees during checkout.', 'woocommerce' ),
+					'default'     => __( 'Custom Shipping', 'woocommerce' ),
+					'desc_tip'    => true,
+				),
+				'local_rate' => array(
+					'title'       => __( 'Local Rate (LKR)', 'woocommerce' ),
+					'type'        => 'text',
+					'description' => __( 'Shipping rate for local deliveries (e.g., Sri Lanka). Enter amount without currency symbol.', 'woocommerce' ),
+					'default'     => '500',
+					'desc_tip'    => true,
+				),
+				'international_rate' => array(
+					'title'       => __( 'International Rate (LKR)', 'woocommerce' ),
+					'type'        => 'text',
+					'description' => __( 'Shipping rate for international deliveries. Enter amount without currency symbol.', 'woocommerce' ),
+					'default'     => '2000',
+					'desc_tip'    => true,
+				),
+				'local_countries' => array(
+					'title'       => __( 'Local Countries', 'woocommerce' ),
+					'type'        => 'textarea',
+					'description' => __( 'Enter country codes (one per line) that should use local rates. Leave empty to use default local country. Example: LK, IN, BD', 'woocommerce' ),
+					'default'     => 'LK',
+					'desc_tip'    => true,
+				),
+			);
+		}
+
+		/**
+		 * Calculate Shipping Rates
+		 *
+		 * This is the core method that calculates shipping costs based on:
+		 * - Customer's shipping country
+		 * - Configured rates in admin settings
+		 * - Cart contents (if needed for weight/quantity-based calculations)
+		 *
+		 * WooCommerce calls this method automatically during checkout when:
+		 * - Customer enters/changes shipping address
+		 * - Cart contents change
+		 * - Page loads on checkout
+		 *
+		 * HOW THE SYSTEM GETS THE COUNTRY:
+		 * 
+		 * 1. Customer enters shipping address at checkout
+		 *    - Country field is filled in checkout form
+		 *    - Stored in: $_POST['shipping_country'] or customer session
+		 * 
+		 * 2. WooCommerce builds the $package array
+		 *    - WooCommerce collects shipping address data
+		 *    - Creates package array with destination information
+		 *    - Package structure:
+		 *      $package = array(
+		 *          'destination' => array(
+		 *              'country'  => 'LK',      // Country code (e.g., 'LK' for Sri Lanka)
+		 *              'state'    => 'WP',      // State/Province code
+		 *              'postcode' => '10100',   // Postal/ZIP code
+		 *              'city'     => 'Colombo', // City name
+		 *          ),
+		 *          'contents' => array(...),     // Cart items
+		 *          'contents_cost' => 25000,    // Total cart value
+		 *      )
+		 * 
+		 * 3. WooCommerce calls calculate_shipping() with $package
+		 *    - Passes package to all active shipping methods
+		 *    - Each method extracts country from $package['destination']['country']
+		 * 
+		 * 4. Country source priority:
+		 *    a) Shipping address (if "Ship to different address" is checked)
+		 *    b) Billing address (if shipping same as billing)
+		 *    c) Store base country (fallback if no address entered)
+		 * 
+		 * 5. Country code format:
+		 *    - ISO 3166-1 alpha-2 format (2 letters)
+		 *    - Examples: 'LK' (Sri Lanka), 'US' (USA), 'GB' (UK), 'IN' (India)
+		 *
+		 * @param array $package Package data containing destination and cart items.
+		 *                       Structure: array(
+		 *                           'destination' => array(
+		 *                               'country'  => 'LK',
+		 *                               'state'    => 'WP',
+		 *                               'postcode' => '10100',
+		 *                               'city'     => 'Colombo',
+		 *                           ),
+		 *                           'contents' => array(...),
+		 *                       )
+		 */
+		public function calculate_shipping( $package = array() ) {
+			// Check if shipping method is enabled
+			// If disabled in admin, don't calculate rates
+			if ( 'yes' !== $this->enabled ) {
+				return;
+			}
+
+			// ============================================
+			// HOW TO GET THE COUNTRY FROM PACKAGE
+			// ============================================
+			// 
+			// The $package array is automatically provided by WooCommerce
+			// It contains the customer's SHIPPING DESTINATION information
+			// 
+			// IMPORTANT: $package['destination'] contains:
+			// - Shipping address country (if "Ship to different address" is checked)
+			// - Billing address country (if shipping same as billing)
+			// 
+			// WooCommerce automatically determines which address to use:
+			// 1. If customer checks "Ship to different address" → uses shipping address
+			// 2. If shipping same as billing → uses billing address
+			// 3. This is handled automatically by WooCommerce, we don't need to check
+			// 
+			// Package structure:
+			// $package['destination']['country']  - Country code (e.g., 'LK', 'US', 'GB')
+			// $package['destination']['state']    - State/Province code
+			// $package['destination']['postcode'] - Postal code
+			// $package['destination']['city']     - City name
+			//
+			// Extract country code from package destination
+			// This is the ISO 3166-1 alpha-2 country code (2 letters)
+			// This will be either shipping or billing country (WooCommerce decides)
+			$destination_country = isset( $package['destination']['country'] ) 
+				? $package['destination']['country'] 
+				: '';
+
+			// Fallback: If no country is set (customer hasn't entered address yet)
+			// Use store's base country as default
+			// This ensures shipping calculation works even before address is entered
+			if ( empty( $destination_country ) ) {
+				// Get store's base country from WooCommerce settings
+				// This is set in: WooCommerce > Settings > General > Store Address
+				$destination_country = WC()->countries->get_base_country();
+			}
+
+			// At this point, $destination_country contains:
+			// - Shipping address country (if "Ship to different address" checked)
+			// - Billing address country (if shipping same as billing)
+			// - Store's base country (if no address entered)
+			// Examples: 'LK', 'US', 'GB', 'IN', etc.
+
+			// Get configured rates from settings
+			// These are set by admin in WooCommerce > Settings > Shipping
+			$local_rate = isset( $this->settings['local_rate'] ) 
+				? floatval( $this->settings['local_rate'] ) 
+				: 500; // Default local rate
+
+			$international_rate = isset( $this->settings['international_rate'] ) 
+				? floatval( $this->settings['international_rate'] ) 
+				: 2000; // Default international rate
+
+			// Get list of local countries from settings
+			// Admin can configure which countries use local rates
+			$local_countries_string = isset( $this->settings['local_countries'] ) 
+				? $this->settings['local_countries'] 
+				: 'LK'; // Default to Sri Lanka
+
+			// Convert country list string to array
+			// Supports both comma-separated and newline-separated lists
+			$local_countries = array_map( 
+				'trim', 
+				preg_split( '/[,\n]/', $local_countries_string )
+			);
+
+			// Remove empty values from array
+			$local_countries = array_filter( $local_countries );
+
+			// If no local countries configured, use store's base country
+			if ( empty( $local_countries ) ) {
+				$local_countries = array( WC()->countries->get_base_country() );
+			}
+
+			// Determine shipping rate based on customer's country
+			// Check if destination country is in the local countries list
+			$is_local = in_array( strtoupper( $destination_country ), array_map( 'strtoupper', $local_countries ), true );
+
+			// Select appropriate rate
+			// Local countries get local rate, all others get international rate
+			$shipping_cost = $is_local ? $local_rate : $international_rate;
+
+			// Get country name for display (optional, for better UX)
+			$countries = WC()->countries->get_countries();
+			$country_name = isset( $countries[ $destination_country ] ) 
+				? $countries[ $destination_country ] 
+				: $destination_country;
+
+			// Create rate label with country information
+			// This helps customers understand why they're seeing this rate
+			$rate_label = $is_local 
+				? sprintf( __( '%s (Local)', 'woocommerce' ), $this->title )
+				: sprintf( __( '%s (%s)', 'woocommerce' ), $this->title, $country_name );
+
+			// Add shipping rate to WooCommerce
+			// This makes the rate available for customer selection at checkout
+			$rate = array(
+				'id'       => $this->id . '_' . $this->instance_id, // Unique rate ID
+				'label'    => $rate_label,                           // Display label
+				'cost'     => $shipping_cost,                         // Shipping cost
+				'calc_tax' => 'per_order',                           // Tax calculation method
+			);
+
+			// Register the rate with WooCommerce
+			// This adds it to the list of available shipping options
+			$this->add_rate( $rate );
+		}
+	}
+}
+
+/**
+ * Register Custom Shipping Method with WooCommerce
+ *
+ * This function registers our custom shipping method class so WooCommerce
+ * can load and use it. The method will appear in shipping zones configuration.
+ *
+ * Hook: woocommerce_shipping_methods
+ * This filter allows adding custom shipping methods to WooCommerce's
+ * list of available shipping methods.
+ *
+ * @param array $methods Array of registered shipping method class names.
+ * @return array Modified array with our custom shipping method added.
+ */
+function woocommerce_theme_register_custom_shipping_method( $methods ) {
+	// Check if WooCommerce is active
+	// This prevents errors if WooCommerce is deactivated
+	if ( ! class_exists( 'WooCommerce' ) ) {
+		return $methods;
+	}
+
+	// Add our custom shipping method class to the methods array
+	// The array key becomes the method ID, value is the class name
+	$methods['theme_custom_shipping'] = 'WC_Theme_Custom_Shipping_Method';
+
+	// Return modified methods array
+	// WooCommerce will now recognize and load our shipping method
+	return $methods;
+}
+// Hook into WooCommerce shipping methods filter
+// Priority 10 ensures it runs at the standard time
+// Accepts 1 parameter: methods array
+add_filter( 'woocommerce_shipping_methods', 'woocommerce_theme_register_custom_shipping_method', 10, 1 );
+
+/**
  * Checkout Blocks: Add Business Type and VAT Number to Checkout block
  *
  * This customizes the WooCommerce Checkout block (Store API–based checkout),
@@ -1353,5 +1683,54 @@ function woocommerce_ensure_fragments_on_refresh() {
 // This is just a placeholder - the actual filter is already registered above
 // WooCommerce's get_refreshed_fragments endpoint automatically calls
 // woocommerce_add_to_cart_fragments filter, so our fragments will be included
+
+/**
+ * My Account: Ensure Order Status Labels Have Proper Markup and Classes
+ *
+ * This function wraps order status labels with proper HTML markup and CSS classes
+ * so they can be styled with colors. WooCommerce uses <mark> elements with
+ * classes like "order-status status-{slug}" for status labels.
+ *
+ * Hook: woocommerce_my_account_my_orders_column_order-status
+ * This action hook is called for each order in the My Account orders table.
+ * It passes the order object as the first (and only) parameter.
+ *
+ * The CSS in style.css will automatically apply colors based on these classes:
+ * - status-pending (Yellow)
+ * - status-processing (Blue)
+ * - status-on-hold (Orange)
+ * - status-completed (Green)
+ * - status-cancelled (Red)
+ * - status-refunded (Gray)
+ * - status-failed (Dark Red)
+ *
+ * @param WC_Order $order Order object containing order data.
+ */
+function woocommerce_theme_wrap_order_status_with_markup( $order ) {
+	// Check if WooCommerce is active and order is valid
+	if ( ! class_exists( 'WooCommerce' ) || ! is_a( $order, 'WC_Order' ) ) {
+		return;
+	}
+
+	// Get order status slug (e.g., 'pending', 'processing', 'completed')
+	$status_slug = $order->get_status();
+
+	// Get human-readable status name (e.g., 'Pending payment', 'Processing')
+	$status_name = wc_get_order_status_name( $status_slug );
+
+	// Output wrapped status with <mark> element and proper classes
+	// This matches WooCommerce's default template structure
+	// Classes: order-status (base class) + status-{slug} (status-specific class)
+	printf(
+		'<mark class="order-status status-%s">%s</mark>',
+		esc_attr( $status_slug ),  // Status slug for CSS targeting (e.g., 'pending')
+		esc_html( $status_name )   // Human-readable status name (e.g., 'Pending payment')
+	);
+}
+// Hook into WooCommerce My Account orders table status column
+// Priority 10 ensures it runs at the standard time
+// Accepts 1 parameter: order object (WC_Order)
+// Note: This is an ACTION hook, not a filter, so we output directly
+add_action( 'woocommerce_my_account_my_orders_column_order-status', 'woocommerce_theme_wrap_order_status_with_markup', 10, 1 );
 
 

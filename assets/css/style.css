@@ -1854,3 +1854,154 @@ body #secondary {
 	}
 }
 
+/* ==========================================================================
+   My Account - Order Status Labels
+   ========================================================================== */
+
+/**
+ * Order Status Labels - Color Coding
+ * 
+ * Styles for order status badges in My Account > Orders page.
+ * Each order status gets a distinct color for easy identification.
+ * 
+ * WooCommerce uses <mark class="order-status status-{slug}"> for status labels.
+ * This CSS targets those elements with proper specificity.
+ */
+
+/* Base styles for all order status labels - Multiple selectors for compatibility */
+.woocommerce-account .woocommerce-MyAccount-orders mark.order-status,
+.woocommerce-account .woocommerce-orders-table mark.order-status,
+.woocommerce-account .woocommerce-MyAccount-content mark.order-status,
+.woocommerce .woocommerce-orders-table .order-status,
+.woocommerce .woocommerce-MyAccount-content .order-status,
+.woocommerce-orders-table__cell-order-status .woocommerce-order-status,
+.woocommerce-MyAccount-orders .order-status,
+.woocommerce-account .order-status {
+	display: inline-block;
+	padding: 0.35rem 0.75rem;
+	border-radius: 4px;
+	font-size: 0.875rem;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+	line-height: 1.2;
+	white-space: nowrap;
+	background-color: #f0f0f0;
+	color: #333;
+	border: 1px solid #ddd;
+}
+
+/* Pending Status - Yellow/Orange */
+.woocommerce-account .woocommerce-MyAccount-orders mark.order-status.status-pending,
+.woocommerce-account .woocommerce-orders-table mark.order-status.status-pending,
+.woocommerce-account .woocommerce-MyAccount-content mark.order-status.status-pending,
+.woocommerce .order-status.status-pending,
+.woocommerce .order-status--pending,
+.woocommerce-orders-table__cell-order-status .status-pending,
+.woocommerce-account .order-status.status-pending {
+	background-color: #ffc107 !important;
+	color: #856404 !important;
+	border: 1px solid #ffb300 !important;
+}
+
+/* Processing Status - Blue */
+.woocommerce-account .woocommerce-MyAccount-orders mark.order-status.status-processing,
+.woocommerce-account .woocommerce-orders-table mark.order-status.status-processing,
+.woocommerce-account .woocommerce-MyAccount-content mark.order-status.status-processing,
+.woocommerce .order-status.status-processing,
+.woocommerce .order-status--processing,
+.woocommerce-orders-table__cell-order-status .status-processing,
+.woocommerce-account .order-status.status-processing {
+	background-color: #2196f3 !important;
+	color: #ffffff !important;
+	border: 1px solid #1976d2 !important;
+}
+
+/* On Hold Status - Orange/Red */
+.woocommerce-account .woocommerce-MyAccount-orders mark.order-status.status-on-hold,
+.woocommerce-account .woocommerce-orders-table mark.order-status.status-on-hold,
+.woocommerce-account .woocommerce-MyAccount-content mark.order-status.status-on-hold,
+.woocommerce .order-status.status-on-hold,
+.woocommerce .order-status--on-hold,
+.woocommerce-orders-table__cell-order-status .status-on-hold,
+.woocommerce-account .order-status.status-on-hold {
+	background-color: #ff9800 !important;
+	color: #ffffff !important;
+	border: 1px solid #f57c00 !important;
+}
+
+/* Completed Status - Green */
+.woocommerce-account .woocommerce-MyAccount-orders mark.order-status.status-completed,
+.woocommerce-account .woocommerce-orders-table mark.order-status.status-completed,
+.woocommerce-account .woocommerce-MyAccount-content mark.order-status.status-completed,
+.woocommerce .order-status.status-completed,
+.woocommerce .order-status--completed,
+.woocommerce-orders-table__cell-order-status .status-completed,
+.woocommerce-account .order-status.status-completed {
+	background-color: #4caf50 !important;
+	color: #ffffff !important;
+	border: 1px solid #388e3c !important;
+}
+
+/* Cancelled Status - Red */
+.woocommerce-account .woocommerce-MyAccount-orders mark.order-status.status-cancelled,
+.woocommerce-account .woocommerce-orders-table mark.order-status.status-cancelled,
+.woocommerce-account .woocommerce-MyAccount-content mark.order-status.status-cancelled,
+.woocommerce .order-status.status-cancelled,
+.woocommerce .order-status--cancelled,
+.woocommerce-orders-table__cell-order-status .status-cancelled,
+.woocommerce-account .order-status.status-cancelled {
+	background-color: #f44336 !important;
+	color: #ffffff !important;
+	border: 1px solid #d32f2f !important;
+}
+
+/* Refunded Status - Gray */
+.woocommerce-account .woocommerce-MyAccount-orders mark.order-status.status-refunded,
+.woocommerce-account .woocommerce-orders-table mark.order-status.status-refunded,
+.woocommerce-account .woocommerce-MyAccount-content mark.order-status.status-refunded,
+.woocommerce .order-status.status-refunded,
+.woocommerce .order-status--refunded,
+.woocommerce-orders-table__cell-order-status .status-refunded,
+.woocommerce-account .order-status.status-refunded {
+	background-color: #9e9e9e !important;
+	color: #ffffff !important;
+	border: 1px solid #757575 !important;
+}
+
+/* Failed Status - Dark Red */
+.woocommerce-account .woocommerce-MyAccount-orders mark.order-status.status-failed,
+.woocommerce-account .woocommerce-orders-table mark.order-status.status-failed,
+.woocommerce-account .woocommerce-MyAccount-content mark.order-status.status-failed,
+.woocommerce .order-status.status-failed,
+.woocommerce .order-status--failed,
+.woocommerce-orders-table__cell-order-status .status-failed,
+.woocommerce-account .order-status.status-failed {
+	background-color: #d32f2f !important;
+	color: #ffffff !important;
+	border: 1px solid #b71c1c !important;
+}
+
+/* Order Status in Order Details View */
+.woocommerce-MyAccount-content .woocommerce-order-status,
+.woocommerce-account .woocommerce-MyAccount-content mark.order-status {
+	display: inline-block;
+	padding: 0.4rem 0.9rem;
+	border-radius: 4px;
+	font-size: 0.875rem;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+	margin-bottom: 1rem;
+}
+
+/* Responsive adjustments for order status labels */
+@media (max-width: 767px) {
+	.woocommerce-account .woocommerce-MyAccount-orders mark.order-status,
+	.woocommerce .woocommerce-orders-table .order-status,
+	.woocommerce .woocommerce-MyAccount-content .order-status {
+		font-size: 0.75rem;
+		padding: 0.25rem 0.6rem;
+	}
+}
+
