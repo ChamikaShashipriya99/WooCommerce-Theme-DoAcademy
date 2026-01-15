@@ -1855,6 +1855,83 @@ body #secondary {
 }
 
 /* ==========================================================================
+   My Account - Navigation Menu
+   ========================================================================== */
+
+/**
+ * My Account navigation (Dashboard, Orders, Downloads, etc.)
+ * Default WooCommerce markup:
+ * .woocommerce-account .woocommerce-MyAccount-navigation ul
+ */
+
+.woocommerce-account .woocommerce-MyAccount-navigation {
+	margin-bottom: 2rem;
+}
+
+.woocommerce-account .woocommerce-MyAccount-navigation ul {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	display: flex;
+	flex-direction: column;
+	gap: 0.35rem;
+	max-width: 260px;
+}
+
+.woocommerce-account .woocommerce-MyAccount-navigation li {
+	margin: 0;
+}
+
+.woocommerce-account .woocommerce-MyAccount-navigation a {
+	display: block;
+	padding: 0.6rem 0.9rem;
+	border-radius: 4px;
+	text-decoration: none;
+	font-size: 0.95rem;
+	font-weight: 500;
+	color: #333;
+	background: #f7f7f7;
+	border: 1px solid #e0e0e0;
+	transition: background-color 0.2s ease, color 0.2s ease,
+		border-color 0.2s ease, box-shadow 0.2s ease, transform 0.08s ease;
+}
+
+.woocommerce-account .woocommerce-MyAccount-navigation a:hover,
+.woocommerce-account .woocommerce-MyAccount-navigation a:focus {
+	background-color: #0073aa;
+	border-color: #0073aa;
+	color: #fff;
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+	transform: translateY(-1px);
+}
+
+.woocommerce-account .woocommerce-MyAccount-navigation li.is-active a,
+.woocommerce-account .woocommerce-MyAccount-navigation li.current-menu-item a {
+	background-color: #005a87;
+	border-color: #005a87;
+	color: #fff;
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.12);
+}
+
+@media (max-width: 767px) {
+	.woocommerce-account .woocommerce-MyAccount-navigation ul {
+		max-width: 100%;
+		flex-direction: row;
+		flex-wrap: wrap;
+		gap: 0.5rem;
+	}
+
+	.woocommerce-account .woocommerce-MyAccount-navigation li {
+		flex: 1 1 calc(50% - 0.5rem);
+	}
+
+	.woocommerce-account .woocommerce-MyAccount-navigation a {
+		text-align: center;
+		padding: 0.7rem 0.5rem;
+	}
+}
+
+/* ==========================================================================
    My Account - Order Status Labels
    ========================================================================== */
 
