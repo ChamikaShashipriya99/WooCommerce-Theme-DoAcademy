@@ -12,21 +12,46 @@
    ========================================================================== */
 
 /**
- * Basic reset and normalization
- * Ensures consistent rendering across different browsers
+ * CSS Reset and Normalization
+ * 
+ * This universal selector (*) applies base styles to all elements, ensuring
+ * consistent rendering across different browsers. Browser default styles vary
+ * significantly, so resetting them provides a predictable foundation.
+ * 
+ * Why reset is necessary:
+ * - Different browsers apply different default margins/padding
+ * - box-sizing: border-box ensures width calculations include padding/borders
+ * - Prevents layout inconsistencies across browsers
+ * - Provides clean slate for theme styling
  */
 * {
-	box-sizing: border-box;
-	margin: 0;
-	padding: 0;
+	box-sizing: border-box; /* Includes padding and border in element width calculations */
+	margin: 0; /* Removes default browser margins */
+	padding: 0; /* Removes default browser padding */
 }
 
+/**
+ * Body Base Styles
+ * 
+ * Sets the foundation typography and color scheme for the entire site.
+ * These styles cascade to all child elements unless overridden.
+ * 
+ * Font stack explanation:
+ * - Starts with system fonts (-apple-system, BlinkMacSystemFont) for native feel
+ * - Falls back to web-safe fonts (Segoe UI, Roboto) for cross-platform support
+ * - Ends with generic sans-serif as final fallback
+ * 
+ * Why these choices:
+ * - System fonts load instantly (no web font download)
+ * - Provides native OS look and feel
+ * - Improves performance and readability
+ */
 body {
 	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
-	font-size: 16px;
-	line-height: 1.6;
-	color: #333;
-	background-color: #fff;
+	font-size: 16px; /* Base font size - all other sizes are relative to this */
+	line-height: 1.6; /* Comfortable reading line height (1.6 × font size) */
+	color: #333; /* Dark gray text color for good contrast and readability */
+	background-color: #fff; /* White background for clean, professional appearance */
 }
 
 /* ==========================================================================
@@ -34,21 +59,47 @@ body {
    ========================================================================== */
 
 /**
- * Site container
- * Wraps the entire site content
+ * Site Container (#page)
+ * 
+ * This is the outermost wrapper for all site content. It uses Flexbox
+ * to create a sticky footer layout where the footer stays at the bottom
+ * even when content is short.
+ * 
+ * Why Flexbox layout:
+ * - flex-direction: column stacks header, main, footer vertically
+ * - min-height: 100vh ensures container fills viewport height
+ * - Allows footer to stick to bottom when content is minimal
+ * - Provides flexible layout structure for all page types
  */
 #page {
-	min-height: 100vh;
-	display: flex;
-	flex-direction: column;
+	min-height: 100vh; /* Minimum height equals full viewport height */
+	display: flex; /* Enables Flexbox layout */
+	flex-direction: column; /* Stacks children vertically (header, main, footer) */
 }
 
+/**
+ * Main Content Area (.site-main)
+ * 
+ * This is the primary content container that wraps all page content,
+ * including blog posts, WooCommerce shop pages, product pages, etc.
+ * 
+ * Why these styles:
+ * - flex: 1 makes this area grow to fill available space (pushes footer down)
+ * - max-width: 1920px prevents content from being too wide on large screens
+ * - margin: 0 auto centers the content horizontally
+ * - padding provides breathing room around content
+ * 
+ * In WooCommerce context:
+ * - This class is added to WooCommerce pages via wrapper functions in functions.php
+ * - Ensures consistent layout across WordPress and WooCommerce pages
+ * - Provides unified styling for shop, product, cart, checkout pages
+ */
 .site-main {
-	flex: 1;
-	padding: 2rem 1rem;
-	max-width: 1920px;
-	margin: 0 auto;
-	width: 100%;
+	flex: 1; /* Grows to fill available vertical space */
+	padding: 2rem 1rem; /* Vertical and horizontal padding for content spacing */
+	max-width: 1920px; /* Maximum width constraint for readability on large screens */
+	margin: 0 auto; /* Centers content horizontally */
+	width: 100%; /* Full width up to max-width */
 }
 
 /* ==========================================================================
@@ -736,22 +787,44 @@ article:last-child {
    ========================================================================== */
 
 /**
- * Products Grid Container
- * Uses CSS Grid for responsive product layout
- * Mobile-first: 1 column, then 2, then 3+ columns
- * Applies to shop pages, related products, upsells, etc.
+ * WooCommerce Products Grid Container
+ * 
+ * This styles the product grid used on shop pages, category pages, related products,
+ * upsells, and cross-sells. CSS Grid provides a flexible, responsive layout system.
+ * 
+ * Why CSS Grid:
+ * - Automatically handles responsive column layouts
+ * - Provides consistent spacing between products
+ * - Easier to maintain than float-based layouts
+ * - Better control over product card alignment
+ * 
+ * Mobile-first approach:
+ * - Default: 1 column (mobile devices)
+ * - Tablet (768px+): 2 columns (via media query)
+ * - Desktop (1200px+): 3-4 columns (via media query)
+ * 
+ * Selectors explained:
+ * - .woocommerce ul.products: Main shop page product grid
+ * - .related.products ul.products: Related products on single product pages
+ * - .upsells.products ul.products: Upsell products on single product pages
+ * - .cross-sells ul.products: Cross-sell products on cart page
+ * 
+ * Why !important:
+ * - Overrides WooCommerce default styles that may conflict
+ * - Ensures grid layout is applied consistently
+ * - Prevents theme conflicts with WooCommerce core styles
  */
 .woocommerce ul.products,
 .woocommerce .related.products ul.products,
 .woocommerce .upsells.products ul.products,
 .woocommerce .cross-sells ul.products {
-	list-style: none;
-	margin: 0;
-	padding: 0;
-	display: grid !important;
-	grid-template-columns: 1fr;
-	gap: 1.5rem;
-	width: 100%;
+	list-style: none; /* Removes default bullet points from list */
+	margin: 0; /* Removes default list margins */
+	padding: 0; /* Removes default list padding */
+	display: grid !important; /* Forces CSS Grid layout (overrides WooCommerce defaults) */
+	grid-template-columns: 1fr; /* Single column by default (mobile-first) */
+	gap: 1.5rem; /* Spacing between product cards */
+	width: 100%; /* Full width of container */
 }
 
 /**
@@ -1131,22 +1204,39 @@ section.upsells.products ul.products li.product {
    ========================================================================== */
 
 /**
- * Mobile-first responsive breakpoints
+ * Mobile-First Responsive Breakpoint Strategy
  * 
- * Standard Breakpoints:
- * - Mobile: 0px to 767px (1 column)
- * - iPad: 768px to 1199px (2 columns)
- * - Desktop: 1200px upward (3-4 columns)
- *   - 1366px (Laptop)
- *   - 1440px (MacBook 13")
- *   - 1680px (22" Desktop)
- *   - 1920px (1080p - Max Width)
+ * This theme uses a mobile-first approach, meaning base styles target mobile
+ * devices, and media queries enhance the layout for larger screens. This is
+ * considered best practice because:
+ * - Mobile devices have limited screen space and processing power
+ * - Starting with mobile ensures core functionality works on all devices
+ * - Progressive enhancement (adding features for larger screens) is easier
+ * - Better performance (mobile devices load fewer styles initially)
  * 
- * Device Support:
- * - Mobile: Galaxy S9+, iPhone SE, iPhone 6/7/8, iPhone XR, iPhone 12 Pro, 
- *           iPhone 14 Pro Max, Pixel 7, Samsung Galaxy S20 Ultra
- * - Tablet: iPad Mini, iPad Air, iPad Pro
- * - Desktop: MacBook 13", 22" Desktop, iMac 27", Laptop, Square Monitor, 1080p
+ * Breakpoint Strategy:
+ * - Mobile (0px - 767px): Single column layout, stacked navigation, full-width elements
+ * - Tablet (768px - 1199px): Two-column product grid, horizontal navigation
+ * - Desktop (1200px+): Three to four columns, optimized spacing, enhanced layouts
+ * 
+ * Why These Specific Breakpoints:
+ * - 768px: Common tablet width (iPad portrait, many Android tablets)
+ * - 1200px: Standard desktop width, accommodates most laptop screens
+ * - 1366px: Common laptop resolution
+ * - 1440px: MacBook 13" and similar devices
+ * - 1680px: Larger desktop monitors
+ * - 1920px: Full HD (1080p) resolution - maximum width constraint
+ * 
+ * Device Coverage:
+ * - Mobile: iPhone SE (375px), iPhone 12/13/14 (390px), Galaxy S20 (360px), Pixel 7 (412px)
+ * - Tablet: iPad Mini (768px), iPad Air (820px), iPad Pro (1024px)
+ * - Desktop: MacBook 13" (1440px), 22" Desktop (1680px), Full HD (1920px)
+ * 
+ * CSS Grid Responsive Behavior:
+ * - Mobile: grid-template-columns: 1fr (single column)
+ * - Tablet: grid-template-columns: repeat(2, 1fr) (two columns)
+ * - Desktop: grid-template-columns: repeat(3, 1fr) (three columns)
+ * - Large Desktop: grid-template-columns: repeat(4, 1fr) (four columns)
  */
 
 /* ==========================================================================
@@ -1492,32 +1582,63 @@ body #secondary {
    ========================================================================== */
 
 /**
- * Mini Cart Wrapper
- * Contains the cart trigger button and dropdown
+ * Mini Cart Wrapper Container
+ * 
+ * This container holds both the cart trigger button and the dropdown menu.
+ * It uses relative positioning so the dropdown can be absolutely positioned
+ * relative to this container.
+ * 
+ * Why these styles:
+ * - position: relative creates positioning context for absolutely positioned dropdown
+ * - display: inline-block allows the wrapper to sit inline with other header elements
+ * - margin-left: auto pushes the cart to the right side of the header
+ * 
+ * In WooCommerce theme context:
+ * - This wrapper is output in header.php when WooCommerce is active
+ * - Provides consistent cart access from any page (shop, product, blog, etc.)
+ * - Enables AJAX cart updates without page reload (handled by minicart.js)
  */
 .mini-cart-wrapper {
-	position: relative;
-	display: inline-block;
-	margin-left: auto;
+	position: relative; /* Creates positioning context for absolutely positioned dropdown */
+	display: inline-block; /* Allows wrapper to sit inline with navigation menu */
+	margin-left: auto; /* Pushes cart to the right side of header */
 }
 
 /**
  * Cart Trigger Button
- * Button that shows/hides the cart dropdown
+ * 
+ * This is the clickable button that displays the cart icon and item count.
+ * When hovered or clicked, it reveals the cart dropdown menu.
+ * 
+ * Why Flexbox layout:
+ * - display: flex arranges icon and count badge horizontally
+ * - align-items: center vertically centers icon and badge
+ * - gap: 0.5rem provides spacing between icon and count
+ * 
+ * Visual design:
+ * - Transparent background with border for subtle appearance
+ * - Border radius for modern, rounded appearance
+ * - Hover states provide visual feedback
+ * - Cursor pointer indicates clickability
+ * 
+ * Accessibility:
+ * - Button element provides semantic meaning
+ * - aria-label and aria-expanded attributes added in HTML for screen readers
+ * - Focus states ensure keyboard navigation works correctly
  */
 .mini-cart__trigger {
-	display: flex;
-	align-items: center;
-	gap: 0.5rem;
-	padding: 0.5rem 1rem;
-	background-color: transparent;
-	border: 1px solid #ddd;
-	border-radius: 4px;
-	cursor: pointer;
-	font-size: 0.95rem;
-	color: #333;
-	transition: all 0.2s ease;
-	position: relative;
+	display: flex; /* Flexbox layout for icon and count alignment */
+	align-items: center; /* Vertically centers icon and count badge */
+	gap: 0.5rem; /* Spacing between cart icon and count badge */
+	padding: 0.5rem 1rem; /* Internal spacing for comfortable click target */
+	background-color: transparent; /* No background color (shows header background) */
+	border: 1px solid #ddd; /* Subtle border for definition */
+	border-radius: 4px; /* Rounded corners for modern appearance */
+	cursor: pointer; /* Indicates element is clickable */
+	font-size: 0.95rem; /* Slightly smaller than body text */
+	color: #333; /* Dark text color for good contrast */
+	transition: all 0.2s ease; /* Smooth transitions for hover/focus states */
+	position: relative; /* Positioning context for any absolutely positioned children */
 }
 
 .mini-cart__trigger:hover,
@@ -1556,36 +1677,86 @@ body #secondary {
 }
 
 /**
- * Cart Dropdown
- * Hidden by default, shown on hover
+ * Cart Dropdown Menu
+ * 
+ * This is the dropdown panel that appears when hovering over or focusing
+ * the cart trigger button. It displays cart items, totals, and action buttons.
+ * 
+ * Positioning:
+ * - position: absolute positions dropdown relative to .mini-cart-wrapper
+ * - top: calc(100% + 10px) places it 10px below the trigger button
+ * - right: 0 aligns dropdown to the right edge of wrapper
+ * 
+ * Visibility control:
+ * - opacity: 0 and visibility: hidden hide dropdown by default
+ * - transform: translateY(-10px) moves dropdown up slightly when hidden
+ * - These properties create smooth show/hide animation
+ * 
+ * Size constraints:
+ * - width: 350px provides comfortable viewing area for cart items
+ * - max-width: calc(100vw - 2rem) ensures dropdown fits on mobile screens
+ * - max-height: 80vh prevents dropdown from exceeding viewport height
+ * 
+ * Layout:
+ * - display: flex with flex-direction: column stacks header, items, footer vertically
+ * - overflow: hidden prevents content from spilling outside rounded corners
+ * 
+ * Visual design:
+ * - White background for clean appearance
+ * - Border and box-shadow create depth and separation from page content
+ * - Border radius for modern, rounded appearance
+ * - z-index: 1000 ensures dropdown appears above other page elements
+ * 
+ * Why this approach:
+ * - Hover-based interaction is intuitive for e-commerce sites
+ * - Smooth transitions provide polished user experience
+ * - Responsive width ensures usability on all devices
  */
 .mini-cart__dropdown {
-	position: absolute;
-	top: calc(100% + 10px);
-	right: 0;
-	width: 350px;
-	max-width: calc(100vw - 2rem);
-	max-height: 80vh;
-	background-color: #fff;
-	border: 1px solid #e0e0e0;
-	border-radius: 8px;
-	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-	opacity: 0;
-	visibility: hidden;
-	transform: translateY(-10px);
-	transition: opacity 0.2s ease, visibility 0.2s ease, transform 0.2s ease;
-	z-index: 1000;
-	display: flex;
-	flex-direction: column;
-	overflow: hidden;
+	position: absolute; /* Positioned relative to .mini-cart-wrapper */
+	top: calc(100% + 10px); /* 10px gap below trigger button */
+	right: 0; /* Aligned to right edge of wrapper */
+	width: 350px; /* Fixed width for consistent appearance */
+	max-width: calc(100vw - 2rem); /* Responsive: prevents overflow on mobile */
+	max-height: 80vh; /* Maximum height prevents exceeding viewport */
+	background-color: #fff; /* White background for clean appearance */
+	border: 1px solid #e0e0e0; /* Subtle border for definition */
+	border-radius: 8px; /* Rounded corners for modern look */
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); /* Shadow creates depth */
+	opacity: 0; /* Hidden by default */
+	visibility: hidden; /* Also hidden for accessibility */
+	transform: translateY(-10px); /* Slightly moved up when hidden */
+	transition: opacity 0.2s ease, visibility 0.2s ease, transform 0.2s ease; /* Smooth show/hide animation */
+	z-index: 1000; /* Appears above other page content */
+	display: flex; /* Flexbox for vertical layout */
+	flex-direction: column; /* Stacks header, items, footer vertically */
+	overflow: hidden; /* Prevents content from spilling outside rounded corners */
 }
 
+/**
+ * Cart Dropdown Visibility States
+ * 
+ * These selectors control when the dropdown is visible. The dropdown appears when:
+ * 1. User hovers over the cart wrapper (desktop)
+ * 2. User focuses the trigger button (keyboard navigation)
+ * 3. User hovers over the dropdown itself (prevents flickering when moving mouse)
+ * 
+ * Why multiple selectors:
+ * - .mini-cart-wrapper:hover: Shows dropdown when hovering anywhere in cart area
+ * - .mini-cart__trigger:focus: Shows dropdown for keyboard accessibility
+ * - .mini-cart__dropdown:hover: Keeps dropdown visible when mouse moves to it
+ * 
+ * Animation:
+ * - opacity: 1 makes dropdown fully visible
+ * - visibility: visible ensures screen readers can access it
+ * - transform: translateY(0) moves dropdown to final position (smooth slide-down effect)
+ */
 .mini-cart-wrapper:hover .mini-cart__dropdown,
 .mini-cart__trigger:focus + .mini-cart__dropdown,
 .mini-cart__dropdown:hover {
-	opacity: 1;
-	visibility: visible;
-	transform: translateY(0);
+	opacity: 1; /* Fully visible */
+	visibility: visible; /* Visible to screen readers */
+	transform: translateY(0); /* Moved to final position (smooth animation) */
 }
 
 /**
@@ -1859,58 +2030,160 @@ body #secondary {
    ========================================================================== */
 
 /**
- * My Account navigation (Dashboard, Orders, Downloads, etc.)
- * Default WooCommerce markup:
- * .woocommerce-account .woocommerce-MyAccount-navigation ul
+ * WooCommerce My Account Navigation Styling
+ * 
+ * This section styles the navigation menu in the WooCommerce "My Account" area.
+ * The menu includes links to: Dashboard, Orders, Downloads, Addresses,
+ * Account Details, and Logout.
+ * 
+ * WooCommerce HTML Structure:
+ * - Container: .woocommerce-account .woocommerce-MyAccount-navigation
+ * - Menu list: ul (unordered list)
+ * - Menu items: li (list items)
+ * - Links: a (anchor tags)
+ * - Active state: li.is-active or li.current-menu-item
+ * 
+ * Why these selectors:
+ * - .woocommerce-account ensures styles only apply on account pages
+ * - .woocommerce-MyAccount-navigation targets WooCommerce's specific navigation class
+ * - High specificity prevents conflicts with other navigation menus
+ * 
+ * Design approach:
+ * - Card-based design with borders and backgrounds
+ * - Hover effects provide visual feedback
+ * - Active state clearly indicates current page
+ * - Responsive layout adapts to mobile screens
  */
 
+/**
+ * My Account Navigation Container
+ * 
+ * Adds spacing below the navigation menu to separate it from account content.
+ * This ensures proper visual hierarchy on My Account pages.
+ */
 .woocommerce-account .woocommerce-MyAccount-navigation {
-	margin-bottom: 2rem;
+	margin-bottom: 2rem; /* Space between navigation and account content */
 }
 
+/**
+ * My Account Navigation Menu List
+ * 
+ * Styles the unordered list that contains all navigation links. Uses Flexbox
+ * for vertical layout with consistent spacing between items.
+ * 
+ * Why Flexbox:
+ * - flex-direction: column stacks menu items vertically
+ * - gap: 0.35rem provides consistent spacing between items
+ * - max-width: 260px constrains menu width for better readability
+ * 
+ * List reset:
+ * - Removes default list styling (bullets, margins, padding)
+ * - Creates clean, modern appearance
+ */
 .woocommerce-account .woocommerce-MyAccount-navigation ul {
-	list-style: none;
-	margin: 0;
-	padding: 0;
-	display: flex;
-	flex-direction: column;
-	gap: 0.35rem;
-	max-width: 260px;
+	list-style: none; /* Removes default bullet points */
+	margin: 0; /* Removes default list margins */
+	padding: 0; /* Removes default list padding */
+	display: flex; /* Enables Flexbox layout */
+	flex-direction: column; /* Stacks menu items vertically */
+	gap: 0.35rem; /* Spacing between menu items */
+	max-width: 260px; /* Maximum width for optimal readability */
 }
 
+/**
+ * My Account Navigation List Items
+ * 
+ * Removes default list item margins to ensure consistent spacing.
+ * The gap property on the parent ul handles spacing instead.
+ */
 .woocommerce-account .woocommerce-MyAccount-navigation li {
-	margin: 0;
+	margin: 0; /* Removes default list item margins */
 }
 
+/**
+ * My Account Navigation Links
+ * 
+ * Styles the clickable menu items (Dashboard, Orders, etc.). Uses a card-like
+ * design with background, border, and padding for a modern appearance.
+ * 
+ * Visual design:
+ * - Light gray background (#f7f7f7) provides subtle card appearance
+ * - Border adds definition and separation
+ * - Padding creates comfortable click target
+ * - Border radius for rounded corners
+ * 
+ * Typography:
+ * - Slightly smaller font size (0.95rem) for compact menu
+ * - Medium font weight (500) for readability without being too bold
+ * - Dark text color (#333) for good contrast
+ * 
+ * Transitions:
+ * - Multiple properties transition smoothly on hover/focus
+ * - transform provides subtle lift effect
+ * - All transitions use ease timing for natural feel
+ */
 .woocommerce-account .woocommerce-MyAccount-navigation a {
-	display: block;
-	padding: 0.6rem 0.9rem;
-	border-radius: 4px;
-	text-decoration: none;
-	font-size: 0.95rem;
-	font-weight: 500;
-	color: #333;
-	background: #f7f7f7;
-	border: 1px solid #e0e0e0;
+	display: block; /* Makes entire area clickable (not just text) */
+	padding: 0.6rem 0.9rem; /* Internal spacing for comfortable click target */
+	border-radius: 4px; /* Rounded corners for modern appearance */
+	text-decoration: none; /* Removes underline from links */
+	font-size: 0.95rem; /* Slightly smaller than body text */
+	font-weight: 500; /* Medium weight for readability */
+	color: #333; /* Dark text color */
+	background: #f7f7f7; /* Light gray background for card effect */
+	border: 1px solid #e0e0e0; /* Subtle border for definition */
 	transition: background-color 0.2s ease, color 0.2s ease,
-		border-color 0.2s ease, box-shadow 0.2s ease, transform 0.08s ease;
+		border-color 0.2s ease, box-shadow 0.2s ease, transform 0.08s ease; /* Smooth transitions */
 }
 
+/**
+ * My Account Navigation Link Hover and Focus States
+ * 
+ * Provides visual feedback when user hovers over or focuses (keyboard navigation)
+ * a menu item. Changes background to theme color and lifts the item slightly.
+ * 
+ * Why both hover and focus:
+ * - hover: For mouse users
+ * - focus: For keyboard navigation accessibility
+ * 
+ * Visual changes:
+ * - Background changes to theme blue (#0073aa)
+ * - Text changes to white for contrast
+ * - Border matches background color
+ * - Box shadow adds depth
+ * - Transform lifts item slightly (translateY(-1px))
+ */
 .woocommerce-account .woocommerce-MyAccount-navigation a:hover,
 .woocommerce-account .woocommerce-MyAccount-navigation a:focus {
-	background-color: #0073aa;
-	border-color: #0073aa;
-	color: #fff;
-	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
-	transform: translateY(-1px);
+	background-color: #0073aa; /* Theme blue background */
+	border-color: #0073aa; /* Matching border color */
+	color: #fff; /* White text for contrast */
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08); /* Subtle shadow for depth */
+	transform: translateY(-1px); /* Lifts item slightly (subtle animation) */
 }
 
+/**
+ * My Account Navigation Active State
+ * 
+ * Indicates which page the user is currently viewing. Uses darker blue
+ * to distinguish from hover state and provide clear visual indication.
+ * 
+ * Why darker blue (#005a87):
+ * - Clearly distinguishes active state from hover state
+ * - Provides stronger visual indication of current page
+ * - Maintains color harmony with theme
+ * 
+ * Selectors:
+ * - li.is-active: WooCommerce adds this class to current page item
+ * - li.current-menu-item: WordPress also adds this class for consistency
+ * - Both selectors ensure active state works in all scenarios
+ */
 .woocommerce-account .woocommerce-MyAccount-navigation li.is-active a,
 .woocommerce-account .woocommerce-MyAccount-navigation li.current-menu-item a {
-	background-color: #005a87;
-	border-color: #005a87;
-	color: #fff;
-	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.12);
+	background-color: #005a87; /* Darker blue for active state */
+	border-color: #005a87; /* Matching border */
+	color: #fff; /* White text */
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.12); /* Slightly stronger shadow */
 }
 
 @media (max-width: 767px) {

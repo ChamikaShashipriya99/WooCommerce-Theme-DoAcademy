@@ -72,16 +72,48 @@ add_action( 'after_setup_theme', 'woocommerce_theme_setup' );
 /**
  * Enqueue Styles and Scripts
  *
- * Properly loads CSS and JavaScript files.
- * This is the WordPress way to include assets (not using <link> or <script> tags directly).
+ * This function properly loads CSS and JavaScript files using WordPress's
+ * enqueue system. This is the WordPress best practice for including assets,
+ * as it prevents duplicate loading, handles dependencies, and allows plugins
+ * to modify or remove assets as needed.
+ * 
+ * Why use wp_enqueue_style/script instead of direct <link>/<script> tags:
+ * - Prevents duplicate asset loading
+ * - Handles dependency management automatically
+ * - Allows plugins to modify/remove assets
+ * - Enables conditional loading based on page context
+ * - Supports cache busting via version numbers
+ * 
+ * Hook: wp_enqueue_scripts
+ * Execution timing: Runs on every frontend page load, before wp_head() outputs assets.
+ * This hook fires on all frontend pages (not admin), ensuring assets load correctly
+ * on shop, product, cart, checkout, and regular WordPress pages.
  */
 function woocommerce_theme_enqueue_assets() {
-	// Get the theme version from style.css (for cache busting)
+	/**
+	 * Get Theme Version for Cache Busting
+	 * 
+	 * wp_get_theme()->get('Version') retrieves the version number from style.css
+	 * header comment. This version is appended to asset URLs as a query parameter,
+	 * forcing browsers to download new versions when the theme is updated.
+	 * 
+	 * Example: style.css?ver=1.0.0
+	 * When theme updates to 1.0.1, browsers see a new URL and download fresh files.
+	 */
 	$theme_version = wp_get_theme()->get( 'Version' );
 
-	// Enqueue Font Awesome 5.15.4
-	// This loads Font Awesome icons library from CDN
-	// Used for cart icon and other icons throughout the theme
+	/**
+	 * Enqueue Font Awesome Icon Library
+	 * 
+	 * Font Awesome provides icon fonts used throughout the theme, particularly
+	 * for the shopping cart icon in the header. Loading from CDN provides:
+	 * - Fast delivery via CDN infrastructure
+	 * - Reduced server load
+	 * - Potential browser caching across sites
+	 * 
+	 * Dependencies: None (empty array) - Font Awesome loads independently
+	 * Version: '5.15.4' - Specific version ensures consistency
+	 */
 	wp_enqueue_style(
 		'font-awesome',
 		'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css',
@@ -89,15 +121,45 @@ function woocommerce_theme_enqueue_assets() {
 		'5.15.4' // Version number
 	);
 
-	// Prepare dependencies array
-	// Add WooCommerce stylesheet as dependency if WooCommerce is active
+	/**
+	 * Prepare Style Dependencies Array
+	 * 
+	 * Dependencies ensure assets load in the correct order. WordPress will:
+	 * 1. Load Font Awesome first (no dependencies)
+	 * 2. Load WooCommerce styles (if active) after Font Awesome
+	 * 3. Load theme styles last (depends on both above)
+	 * 
+	 * This ensures theme styles can override WooCommerce styles, and both
+	 * can use Font Awesome icons without conflicts.
+	 */
 	$dependencies = array( 'font-awesome' ); // Theme style depends on Font Awesome
 	if ( class_exists( 'WooCommerce' ) ) {
+		/**
+		 * Add WooCommerce Stylesheet as Dependency
+		 * 
+		 * 'woocommerce-general' is the handle for WooCommerce's main stylesheet.
+		 * By adding it as a dependency, we ensure:
+		 * - WooCommerce styles load before theme styles
+		 * - Theme styles can override WooCommerce defaults
+		 * - Styles load in correct order for proper cascading
+		 */
 		$dependencies[] = 'woocommerce-general';
 	}
 
-	// Enqueue the main stylesheet
-	// This loads assets/css/style.css with proper dependency handling
+	/**
+	 * Enqueue Main Theme Stylesheet
+	 * 
+	 * This loads the primary CSS file containing all theme styles. The file
+	 * includes styles for:
+	 * - Layout and typography
+	 * - WooCommerce page styling (shop, product, cart, checkout)
+	 * - Mini cart dropdown
+	 * - Navigation and header
+	 * - Footer and widgets
+	 * 
+	 * get_template_directory_uri() returns the theme's URL, allowing WordPress
+	 * to construct the full path to the stylesheet regardless of site URL.
+	 */
 	wp_enqueue_style(
 		'woocommerce-theme-style',                    // Handle (unique identifier)
 		get_template_directory_uri() . '/assets/css/style.css', // Path to stylesheet
@@ -105,9 +167,19 @@ function woocommerce_theme_enqueue_assets() {
 		$theme_version                                // Version (for cache busting)
 	);
 
-	// Enqueue JavaScript for mini cart AJAX updates
-	// This script handles AJAX-based cart updates without page reload
-	// jQuery is required as a dependency (WordPress includes jQuery by default)
+	/**
+	 * Enqueue Mini Cart JavaScript
+	 * 
+	 * This script handles AJAX-based cart updates, allowing the mini cart to
+	 * update without page reloads when items are added/removed. The script:
+	 * - Listens for cart update events
+	 * - Makes AJAX requests to get updated cart HTML
+	 * - Updates the mini cart dropdown dynamically
+	 * - Updates cart count badge
+	 * 
+	 * Dependencies: jQuery (WordPress includes jQuery by default)
+	 * $in_footer: true - Loads script before </body> tag for better performance
+	 */
 	wp_enqueue_script(
 		'woocommerce-minicart-ajax',                    // Handle (unique identifier)
 		get_template_directory_uri() . '/assets/js/minicart.js', // Path to JavaScript file
@@ -116,80 +188,193 @@ function woocommerce_theme_enqueue_assets() {
 		true                                            // Load in footer (better performance)
 	);
 }
-// Hook into 'wp_enqueue_scripts' action
-// This ensures styles/scripts are loaded on the frontend
+/**
+ * Hook Registration: wp_enqueue_scripts
+ * 
+ * This hook fires on every frontend page load, before wp_head() outputs the
+ * <head> section. It is the standard WordPress hook for enqueuing frontend
+ * assets. The hook does NOT fire in the WordPress admin area.
+ * 
+ * Execution timing: Early in page load, before template rendering begins.
+ * This ensures all assets are registered before wp_head() tries to output them.
+ */
 add_action( 'wp_enqueue_scripts', 'woocommerce_theme_enqueue_assets' );
 
 /**
  * Remove WooCommerce Default Wrappers
  *
- * WooCommerce adds default content wrappers that we need to remove
- * so we can add our custom theme wrappers instead.
- * We check if WooCommerce is active before removing hooks.
+ * WooCommerce adds default HTML wrapper elements around shop/product content.
+ * These default wrappers don't match our theme's HTML structure, so we remove
+ * them and replace them with custom wrappers that match our theme's layout.
+ * 
+ * Why this exists in a WooCommerce theme:
+ * - Ensures consistent HTML structure across all pages
+ * - Allows theme to control layout and styling
+ * - Prevents WooCommerce default styles from conflicting with theme styles
+ * - Maintains semantic HTML structure matching header.php and footer.php
+ * 
+ * Hook execution timing: This function runs on the 'wp' action, which fires
+ * after WordPress core is fully loaded but before template rendering begins.
+ * This timing is critical because WooCommerce hooks must be registered before
+ * we can remove them.
  */
 function woocommerce_theme_remove_default_wrappers() {
-	// Check if WooCommerce is active
+	/**
+	 * Check if WooCommerce is Active
+	 * 
+	 * This prevents fatal errors if WooCommerce plugin is deactivated.
+	 * Without this check, attempting to remove WooCommerce hooks would cause
+	 * PHP errors when WooCommerce classes don't exist.
+	 */
 	if ( ! class_exists( 'WooCommerce' ) ) {
 		return;
 	}
 
 	/**
-	 * Remove WooCommerce default opening wrapper
-	 * Priority 10 is the default, we need to match it exactly to remove it.
-	 * Priority determines the order in which hooks are executed.
+	 * Remove WooCommerce Default Opening Wrapper
+	 * 
+	 * remove_action() removes a previously registered action hook. To successfully
+	 * remove a hook, we must match:
+	 * - The exact hook name: 'woocommerce_before_main_content'
+	 * - The exact callback function: 'woocommerce_output_content_wrapper'
+	 * - The exact priority: 10 (WooCommerce's default priority)
+	 * 
+	 * If any of these don't match exactly, the removal fails silently.
+	 * 
+	 * Hook: woocommerce_before_main_content
+	 * When it runs: Before WooCommerce main content area (shop, product pages)
+	 * What it does: Outputs opening wrapper div (we want to replace this)
 	 */
 	remove_action( 'woocommerce_before_main_content', 'woocommerce_output_content_wrapper', 10 );
 
 	/**
-	 * Remove WooCommerce default closing wrapper
-	 * Priority 10 is the default, we need to match it exactly to remove it.
-	 * Priority determines the order in which hooks are executed.
+	 * Remove WooCommerce Default Closing Wrapper
+	 * 
+	 * Similar to above, this removes the closing wrapper that WooCommerce
+	 * outputs after the main content area.
+	 * 
+	 * Hook: woocommerce_after_main_content
+	 * When it runs: After WooCommerce main content area
+	 * What it does: Outputs closing wrapper div (we want to replace this)
 	 */
 	remove_action( 'woocommerce_after_main_content', 'woocommerce_output_content_wrapper_end', 10 );
 }
-// Hook into 'wp' action (runs after WordPress is fully loaded)
-// This ensures WooCommerce is loaded before we try to remove its hooks
+/**
+ * Hook Registration: wp
+ * 
+ * The 'wp' action fires after WordPress core is fully loaded, including:
+ * - All plugins loaded and initialized
+ * - Theme functions.php loaded
+ * - Query parsed and main query executed
+ * - But before template rendering begins
+ * 
+ * Why use 'wp' instead of 'init':
+ * - 'init' fires too early (before plugins fully loaded)
+ * - 'wp' ensures WooCommerce hooks are registered before we try to remove them
+ * - This is the standard pattern for modifying WooCommerce hooks
+ * 
+ * Execution timing: Runs on every page load, after plugins load, before template renders.
+ */
 add_action( 'wp', 'woocommerce_theme_remove_default_wrappers' );
 
 /**
  * Add Custom Theme Opening Wrapper
  *
- * This adds our custom opening wrapper before WooCommerce main content.
- * This wrapper matches our theme's HTML structure from header.php and index.php.
+ * This function outputs the opening HTML wrapper that matches our theme's
+ * structure. It replaces WooCommerce's default wrapper (which we removed above)
+ * with our custom wrapper that ensures consistent styling across all pages.
+ * 
+ * Why this exists in a WooCommerce theme:
+ * - Maintains consistent HTML structure across WordPress and WooCommerce pages
+ * - Allows theme CSS to style WooCommerce pages correctly
+ * - Ensures proper semantic HTML structure
+ * - Matches the wrapper structure used in index.php for blog pages
+ * 
+ * The wrapper div uses:
+ * - id="primary": Matches main content area ID from index.php
+ * - class="site-main": Standard WordPress main content class
+ * - class="woocommerce-page": WooCommerce-specific class for targeted styling
  */
 function woocommerce_theme_wrapper_start() {
-	// Only output wrapper if WooCommerce is active
-	// This prevents wrapper from being output when WooCommerce is not installed
+	/**
+	 * Check if WooCommerce is Active
+	 * 
+	 * Prevents outputting wrapper HTML when WooCommerce is not installed.
+	 * Without WooCommerce, this hook wouldn't fire anyway, but this check
+	 * provides an extra safety layer.
+	 */
 	if ( ! class_exists( 'WooCommerce' ) ) {
 		return;
 	}
 
 	/**
-	 * Output opening wrapper div that matches our theme structure
-	 * This ensures WooCommerce pages (shop, product, cart, checkout) 
-	 * have consistent layout with the rest of the theme
+	 * Output Opening Wrapper Div
+	 * 
+	 * This HTML matches the structure in index.php, ensuring WooCommerce pages
+	 * (shop, product, cart, checkout, myaccount) have the same wrapper structure
+	 * as regular WordPress pages. This consistency allows theme CSS to work
+	 * uniformly across all page types.
 	 */
 	echo '<div id="primary" class="site-main woocommerce-page">';
 }
-// Hook into 'woocommerce_before_main_content' action
-// Priority 10 ensures it runs at the standard time (same as default WooCommerce hooks)
+/**
+ * Hook Registration: woocommerce_before_main_content
+ * 
+ * This WooCommerce action hook fires immediately before the main content area
+ * on WooCommerce pages (shop, product, cart, checkout, myaccount). It is the
+ * standard location for outputting opening wrapper elements.
+ * 
+ * When it runs:
+ * - On shop archive pages: Before product loop
+ * - On single product pages: Before product content
+ * - On cart page: Before cart table
+ * - On checkout page: Before checkout form
+ * - On account pages: Before account content
+ * 
+ * Priority 10: Standard priority ensures it runs at the expected time, replacing
+ * the default WooCommerce wrapper we removed earlier.
+ */
 add_action( 'woocommerce_before_main_content', 'woocommerce_theme_wrapper_start', 10 );
 
 /**
  * Add Custom Theme Closing Wrapper
  *
- * This adds our custom closing wrapper after WooCommerce main content.
- * This ensures proper HTML structure closure.
+ * This function outputs the closing HTML wrapper that closes the opening
+ * wrapper added by woocommerce_theme_wrapper_start(). Proper HTML structure
+ * requires matching opening and closing tags.
+ * 
+ * Why this exists:
+ * - Closes the opening wrapper div properly
+ * - Maintains valid HTML structure
+ * - Ensures consistent page structure across all WooCommerce pages
  */
 function woocommerce_theme_wrapper_end() {
 	/**
-	 * Output closing wrapper div
-	 * This closes the wrapper opened in woocommerce_theme_wrapper_start()
+	 * Output Closing Wrapper Div
+	 * 
+	 * This closes the <div id="primary" class="site-main woocommerce-page">
+	 * that was opened in woocommerce_theme_wrapper_start(). The HTML comment
+	 * helps developers identify which opening tag this closes.
 	 */
 	echo '</div><!-- #primary -->';
 }
-// Hook into 'woocommerce_after_main_content' action
-// Priority 10 ensures it runs at the standard time (same as default WooCommerce hooks)
+/**
+ * Hook Registration: woocommerce_after_main_content
+ * 
+ * This WooCommerce action hook fires immediately after the main content area
+ * on WooCommerce pages. It is the standard location for outputting closing
+ * wrapper elements and is the counterpart to woocommerce_before_main_content.
+ * 
+ * When it runs:
+ * - On shop archive pages: After product loop
+ * - On single product pages: After product content
+ * - On cart page: After cart table
+ * - On checkout page: After checkout form
+ * - On account pages: After account content
+ * 
+ * Priority 10: Standard priority ensures it runs at the expected time, matching
+ * the priority of the opening wrapper function.
+ */
 add_action( 'woocommerce_after_main_content', 'woocommerce_theme_wrapper_end', 10 );
 
 /**
