@@ -467,6 +467,70 @@ function woocommerce_theme_blocks_save_checkout_fields( $order, $request ) {
 add_action( 'woocommerce_store_api_checkout_update_order_from_request', 'woocommerce_theme_blocks_save_checkout_fields', 10, 2 );
 
 /**
+ * Checkout Validation: Require VAT Number only for company billing with country
+ *
+ * Hooked into woocommerce_checkout_process so it runs during checkout validation.
+ * Rules:
+ * - If Business Type = company
+ * - AND a billing country is selected
+ * - THEN billing_vat_number must not be empty.
+ */
+function woocommerce_theme_validate_vat_number_conditionally() {
+	// Read posted values safely.
+	$business_type = isset( $_POST['billing_business_type'] ) ? sanitize_text_field( wp_unslash( $_POST['billing_business_type'] ) ) : '';
+	$country       = isset( $_POST['billing_country'] ) ? sanitize_text_field( wp_unslash( $_POST['billing_country'] ) ) : '';
+	$vat_number    = isset( $_POST['billing_vat_number'] ) ? trim( (string) wp_unslash( $_POST['billing_vat_number'] ) ) : '';
+
+	// Only apply rule when business type is "company" and a country is chosen.
+	if ( 'company' === $business_type && ! empty( $country ) && '' === $vat_number ) {
+		// Add a checkout error notice; WooCommerce will prevent order submission.
+		wc_add_notice(
+			__( 'Please enter your VAT number for company billing.', 'woocommerce' ),
+			'error'
+		);
+	}
+}
+add_action( 'woocommerce_checkout_process', 'woocommerce_theme_validate_vat_number_conditionally' );
+
+/**
+ * Checkout: Show product image in \"Your order\" section
+ *
+ * Uses woocommerce_cart_item_name to prepend the product thumbnail
+ * before the product title in the order review table on checkout.
+ *
+ * @param string        $item_name Default item name HTML.
+ * @param array         $cart_item Cart item data.
+ * @param string        $cart_item_key Cart item key.
+ * @return string Modified item name HTML.
+ */
+function woocommerce_theme_checkout_order_review_product_image( $item_name, $cart_item, $cart_item_key ) {
+	// Only modify output on the checkout page (Your order table).
+	if ( ! is_checkout() ) {
+		return $item_name;
+	}
+
+	// Get product object from cart item.
+	if ( empty( $cart_item['data'] ) || ! is_a( $cart_item['data'], 'WC_Product' ) ) {
+		return $item_name;
+	}
+
+	$product   = $cart_item['data'];
+	$thumbnail = $product->get_image( 'woocommerce_thumbnail', array(
+		'class' => 'order-review-product-thumbnail',
+		'alt'   => $product->get_name(),
+	) );
+
+	// Wrap image + name for easier styling.
+	$item_html  = '<div class="order-review-product">';
+	$item_html .= '<div class="order-review-product__thumb">' . $thumbnail . '</div>';
+	$item_html .= '<div class="order-review-product__title">' . $item_name . '</div>';
+	$item_html .= '</div>';
+
+	return $item_html;
+}
+add_filter( 'woocommerce_cart_item_name', 'woocommerce_theme_checkout_order_review_product_image', 10, 3 );
+
+/**
  * Remove Sidebar Support
  *
  * This function removes sidebar/widget area support from the theme.

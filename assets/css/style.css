@@ -482,6 +482,119 @@ article:last-child {
 }
 
 /* ==========================================================================
+   Checkout – "Your order" Section Styling
+   ========================================================================== */
+
+/**
+ * Your order heading
+ */
+.woocommerce-checkout #order_review_heading {
+	font-size: 1.4rem;
+	font-weight: 600;
+	margin-bottom: 1rem;
+	color: #333;
+}
+
+/**
+ * Order review card container
+ */
+.woocommerce .woocommerce-checkout-review-order,
+.woocommerce-page .woocommerce-checkout-review-order {
+	background-color: #ffffff;
+	border-radius: 10px;
+	border: 1px solid #e0e0e0;
+	box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+	padding: 1.5rem;
+}
+
+/**
+ * Order table base styles
+ */
+.woocommerce .woocommerce-checkout-review-order-table {
+	width: 100%;
+	border-collapse: collapse;
+	font-size: 0.95rem;
+}
+
+.woocommerce .woocommerce-checkout-review-order-table thead th {
+	background: linear-gradient(135deg, #0073aa 0%, #005a87 100%);
+	color: #ffffff;
+	font-weight: 600;
+	padding: 0.75rem 0.9rem;
+	border: none;
+}
+
+.woocommerce .woocommerce-checkout-review-order-table th,
+.woocommerce .woocommerce-checkout-review-order-table td {
+	padding: 0.75rem 0.9rem;
+	border-bottom: 1px solid #f0f0f0;
+}
+
+.woocommerce .woocommerce-checkout-review-order-table tbody tr:nth-child(even) td {
+	background-color: #fafafa;
+}
+
+/**
+ * Subtotal / total rows
+ */
+.woocommerce .woocommerce-checkout-review-order-table tfoot th {
+	text-align: left;
+	font-weight: 600;
+	color: #444;
+}
+
+.woocommerce .woocommerce-checkout-review-order-table tfoot td {
+	text-align: right;
+}
+
+.woocommerce .woocommerce-checkout-review-order-table tfoot tr.cart-subtotal th,
+.woocommerce .woocommerce-checkout-review-order-table tfoot tr.cart-subtotal td {
+	padding-top: 1rem;
+}
+
+.woocommerce .woocommerce-checkout-review-order-table tfoot tr.order-total th,
+.woocommerce .woocommerce-checkout-review-order-table tfoot tr.order-total td {
+	padding-top: 0.75rem;
+	font-size: 1.1rem;
+	border-top: 2px solid #e0e0e0;
+}
+
+.woocommerce .woocommerce-checkout-review-order-table tfoot tr.order-total td {
+	color: #0073aa;
+	font-weight: 700;
+}
+
+/**
+ * Smaller padding on mobile so card fits nicely
+ */
+@media (max-width: 767px) {
+	.woocommerce .woocommerce-checkout-review-order,
+	.woocommerce-page .woocommerce-checkout-review-order {
+		padding: 1.25rem 1rem;
+	}
+}
+
+/* Product image + title layout inside Your order table */
+.order-review-product {
+	display: flex;
+	align-items: center;
+	gap: 0.75rem;
+}
+
+.order-review-product__thumb img,
+.order-review-product-thumbnail {
+	width: 52px;
+	height: 52px;
+	object-fit: cover;
+	border-radius: 4px;
+	display: block;
+}
+
+.order-review-product__title {
+	flex: 1;
+}
+
+/* ==========================================================================
    Shop Page Hero Banner / Poster
    ========================================================================== */
 
