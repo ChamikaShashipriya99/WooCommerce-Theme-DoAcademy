@@ -501,6 +501,112 @@ function woocommerce_theme_email_order_meta_fields( $fields, $sent_to_admin, $or
 add_filter( 'woocommerce_email_order_meta_fields', 'woocommerce_theme_email_order_meta_fields', 10, 3 );
 
 /**
+ * Cart: Apply Automatic 20% Discount for Orders Over LKR 20,000
+ *
+ * This function automatically applies a 20% discount when the cart subtotal
+ * exceeds LKR 20,000. The discount is applied as a negative fee, which
+ * appears clearly in the cart totals section.
+ *
+ * Hook: woocommerce_cart_calculate_fees
+ * This hook fires during cart calculation, allowing us to add fees (positive or negative).
+ * Negative fees act as discounts and are displayed in the cart totals.
+ *
+ * Calculation Logic:
+ * 1. Get cart subtotal (sum of all line items before taxes/shipping)
+ * 2. Check if subtotal > 20,000 LKR
+ * 3. If condition met, calculate 20% discount: subtotal × 0.20
+ * 4. Add as negative fee (discount) to cart
+ * 5. Check if fee already exists to prevent duplicate application
+ *
+ * Example:
+ * - Cart subtotal: LKR 25,000
+ * - Discount (20%): LKR -5,000
+ * - Final subtotal: LKR 20,000
+ *
+ * @param WC_Cart $cart Cart object containing cart data and methods.
+ */
+function woocommerce_theme_apply_automatic_discount( $cart ) {
+	// Check if WooCommerce is active and cart object is valid
+	if ( ! class_exists( 'WooCommerce' ) || ! is_a( $cart, 'WC_Cart' ) ) {
+		return;
+	}
+
+	// Only apply discount if cart is not empty
+	// Empty carts don't need discount calculation
+	if ( $cart->is_empty() ) {
+		return;
+	}
+
+	// Get cart subtotal (excluding taxes and shipping)
+	// get_subtotal() returns the sum of all line items before taxes
+	// This is the base amount we use for discount calculation
+	$cart_subtotal = $cart->get_subtotal();
+
+	// Discount threshold: LKR 20,000
+	// Orders must exceed this amount to qualify for discount
+	$discount_threshold = 20000;
+
+	// Discount percentage: 20%
+	// This is the percentage applied to the cart subtotal
+	$discount_percentage = 0.20; // 20% as decimal (0.20)
+
+	// Check if cart subtotal exceeds the threshold
+	// Only apply discount if subtotal is greater than LKR 20,000
+	if ( $cart_subtotal <= $discount_threshold ) {
+		return; // Exit early if threshold not met
+	}
+
+	// Calculate discount amount
+	// Formula: subtotal × discount_percentage
+	// Example: 25,000 × 0.20 = 5,000
+	$discount_amount = $cart_subtotal * $discount_percentage;
+
+	// Discount fee name (used for identification and display)
+	// This name appears in the cart totals section
+	$discount_fee_name = __( 'Bulk Order Discount (20%)', 'woocommerce' );
+
+	// Check if discount fee already exists to prevent duplicate application
+	// get_fees() returns all fees currently applied to the cart
+	$existing_fees = $cart->get_fees();
+	$discount_already_applied = false;
+
+	// Loop through existing fees to check if our discount is already applied
+	// We check by fee name to identify our specific discount
+	foreach ( $existing_fees as $fee_key => $fee ) {
+		// Check if fee name matches our discount fee name
+		// This prevents the discount from being applied multiple times
+		// WooCommerce stores fee name in the 'name' property
+		if ( isset( $fee->name ) && $discount_fee_name === $fee->name ) {
+			$discount_already_applied = true;
+			break; // Exit loop if discount already found
+		}
+	}
+
+	// Only add discount if it hasn't been applied already
+	// This prevents duplicate discounts on cart recalculation
+	// WooCommerce recalculates fees on every cart update, so this check is essential
+	if ( ! $discount_already_applied ) {
+		// Add discount as a negative fee
+		// Negative fees appear as discounts in cart totals section
+		// Parameters:
+		// 1. Fee name: Displayed in cart/checkout (e.g., "Bulk Order Discount (20%)")
+		// 2. Fee amount: Negative value creates a discount (e.g., -5000)
+		// 3. Taxable: false = discount is not subject to tax
+		// 4. Tax class: empty string = use default tax class
+		$cart->add_fee(
+			$discount_fee_name,  // Fee name (displayed in cart)
+			-$discount_amount,    // Negative amount = discount
+			false,                // Not taxable
+			''                    // Tax class (empty = default)
+		);
+	}
+}
+// Hook into WooCommerce cart calculate fees action
+// Priority 10 ensures it runs at the standard time during cart calculation
+// Accepts 1 parameter: cart object (WC_Cart)
+add_action( 'woocommerce_cart_calculate_fees', 'woocommerce_theme_apply_automatic_discount', 10, 1 );
+
+/**
  * Checkout Blocks: Add Business Type and VAT Number to Checkout block
  *
  * This customizes the WooCommerce Checkout block (Store API–based checkout),
