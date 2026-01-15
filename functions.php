@@ -315,63 +315,190 @@ function woocommerce_theme_custom_checkout_fields( $fields ) {
 add_filter( 'woocommerce_checkout_fields', 'woocommerce_theme_custom_checkout_fields' );
 
 /**
- * Checkout: Save Business Type and VAT Number to Order Meta
+ * Checkout: Save Custom Checkout Fields to Order Meta
  *
- * @param int   $order_id Order ID.
- * @param array $data     Sanitized checkout data.
+ * This function saves custom checkout fields (Business Type and VAT Number)
+ * to order meta data when an order is created during checkout.
+ *
+ * Hook: woocommerce_checkout_update_order_meta
+ * This hook fires after checkout validation passes and before order is finalized.
+ * It receives sanitized checkout data from the checkout form.
+ *
+ * Meta keys use underscore prefix (_billing_business_type) to hide them from
+ * the default custom fields meta box in WordPress admin.
+ *
+ * @param int   $order_id Order ID of the newly created order.
+ * @param array $data     Array of sanitized checkout form data.
  */
 function woocommerce_theme_save_custom_checkout_fields( $order_id, $data ) {
+	// Check if Business Type field was submitted in checkout form
+	// isset() ensures the field exists before trying to save it
 	if ( isset( $data['billing_business_type'] ) ) {
+		// Save Business Type to order meta
+		// update_post_meta() handles both add and update operations
+		// sanitize_text_field() removes any potentially dangerous characters
 		update_post_meta(
-			$order_id,
-			'_billing_business_type',
-			sanitize_text_field( $data['billing_business_type'] )
+			$order_id,                                    // Order ID
+			'_billing_business_type',                     // Meta key (with underscore prefix)
+			sanitize_text_field( $data['billing_business_type'] ) // Sanitized value
 		);
 	}
 
+	// Check if VAT Number field was submitted in checkout form
+	// isset() ensures the field exists before trying to save it
 	if ( isset( $data['billing_vat_number'] ) ) {
+		// Save VAT Number to order meta
+		// update_post_meta() handles both add and update operations
+		// sanitize_text_field() removes any potentially dangerous characters
 		update_post_meta(
-			$order_id,
-			'_billing_vat_number',
-			sanitize_text_field( $data['billing_vat_number'] )
+			$order_id,                                // Order ID
+			'_billing_vat_number',                    // Meta key (with underscore prefix)
+			sanitize_text_field( $data['billing_vat_number'] ) // Sanitized value
 		);
 	}
 }
+// Hook into WooCommerce checkout update order meta action
+// Priority 10 ensures it runs at the standard time
+// Accepts 2 parameters: order_id (int) and data (array)
 add_action( 'woocommerce_checkout_update_order_meta', 'woocommerce_theme_save_custom_checkout_fields', 10, 2 );
 
 /**
- * Admin: Display Business Type and VAT Number on Order Edit Screen
+ * Admin: Display Custom Checkout Fields on Order Details Page
  *
- * @param WC_Order $order Order object.
+ * This function displays custom checkout fields (Business Type and VAT Number)
+ * on the WooCommerce order edit screen in the WordPress admin.
+ *
+ * Hook: woocommerce_admin_order_data_after_billing_address
+ * This hook fires after the billing address section on the order edit screen,
+ * allowing us to display custom fields in a logical location.
+ *
+ * The fields are displayed only if they have values, preventing empty sections.
+ *
+ * @param WC_Order $order Order object containing order data.
  */
 function woocommerce_theme_admin_order_custom_fields( $order ) {
+	// Check if order object is valid
+	if ( ! is_a( $order, 'WC_Order' ) ) {
+		return;
+	}
+
+	// Retrieve custom field values from order meta
+	// get_post_meta() returns the saved value or empty string if not set
 	$business_type = get_post_meta( $order->get_id(), '_billing_business_type', true );
 	$vat_number    = get_post_meta( $order->get_id(), '_billing_vat_number', true );
 
+	// Exit early if no custom fields have values
+	// This prevents empty wrapper divs from being displayed
 	if ( ! $business_type && ! $vat_number ) {
 		return;
 	}
 
+	// Start wrapper div for custom fields section
+	// This provides a container for styling and organization
 	echo '<div class="woocommerce-order-data__billing-business-wrapper">';
 
+	// Display Business Type if it exists
 	if ( $business_type ) {
-		$map = array(
+		// Map internal values to user-friendly display labels
+		$business_type_map = array(
 			'individual' => __( 'Individual', 'woocommerce' ),
 			'company'    => __( 'Company', 'woocommerce' ),
 		);
 
-		$business_type_label = isset( $map[ $business_type ] ) ? $map[ $business_type ] : $business_type;
+		// Get display label or fallback to raw value if mapping doesn't exist
+		$business_type_label = isset( $business_type_map[ $business_type ] ) 
+			? $business_type_map[ $business_type ] 
+			: $business_type;
 
+		// Output Business Type field
+		// esc_html() ensures safe output and prevents XSS attacks
 		echo '<p><strong>' . esc_html__( 'Business Type', 'woocommerce' ) . ':</strong> ' . esc_html( $business_type_label ) . '</p>';
 	}
 
+	// Display VAT Number if it exists
 	if ( $vat_number ) {
+		// Output VAT Number field
+		// esc_html() ensures safe output and prevents XSS attacks
 		echo '<p><strong>' . esc_html__( 'VAT Number', 'woocommerce' ) . ':</strong> ' . esc_html( $vat_number ) . '</p>';
 	}
 
+	// Close wrapper div
 	echo '</div>';
 }
+// Hook into WooCommerce admin order data after billing address action
+// Priority 10 ensures it displays at the standard time
+// Accepts 1 parameter: order object (WC_Order)
 add_action( 'woocommerce_admin_order_data_after_billing_address', 'woocommerce_theme_admin_order_custom_fields', 10, 1 );
+
+/**
+ * Emails: Display Custom Checkout Fields in Order Emails
+ *
+ * This function displays custom checkout fields (Business Type and VAT Number)
+ * in both admin order emails and customer order emails.
+ *
+ * Hook: woocommerce_email_order_meta_fields
+ * This hook allows adding custom fields to order emails sent to:
+ * - Admin (new order, processing, completed, etc.)
+ * - Customer (order received, processing, completed, etc.)
+ *
+ * @param array    $fields    Array of existing email order meta fields.
+ * @param bool     $sent_to_admin Whether the email is being sent to admin (true) or customer (false).
+ * @param WC_Order $order     Order object containing order data.
+ * @return array Modified fields array with custom checkout fields added.
+ */
+function woocommerce_theme_email_order_meta_fields( $fields, $sent_to_admin, $order ) {
+	// Check if WooCommerce is active
+	if ( ! class_exists( 'WooCommerce' ) || ! is_a( $order, 'WC_Order' ) ) {
+		return $fields;
+	}
+
+	// Get custom field values from order meta
+	// Using get_post_meta() to retrieve saved values
+	$business_type = get_post_meta( $order->get_id(), '_billing_business_type', true );
+	$vat_number    = get_post_meta( $order->get_id(), '_billing_vat_number', true );
+
+	// Only add fields if they have values
+	// This prevents empty fields from appearing in emails
+
+	// Add Business Type field if it exists
+	if ( ! empty( $business_type ) ) {
+		// Map internal values to display labels
+		$business_type_map = array(
+			'individual' => __( 'Individual', 'woocommerce' ),
+			'company'    => __( 'Company', 'woocommerce' ),
+		);
+
+		// Get display label or fallback to raw value
+		$business_type_label = isset( $business_type_map[ $business_type ] ) 
+			? $business_type_map[ $business_type ] 
+			: $business_type;
+
+		// Add to fields array
+		// Structure: label => value (WooCommerce will format this in email template)
+		$fields['billing_business_type'] = array(
+			'label' => __( 'Business Type', 'woocommerce' ),
+			'value' => $business_type_label,
+		);
+	}
+
+	// Add VAT Number field if it exists
+	if ( ! empty( $vat_number ) ) {
+		// Add to fields array
+		// Structure: label => value (WooCommerce will format this in email template)
+		$fields['billing_vat_number'] = array(
+			'label' => __( 'VAT Number', 'woocommerce' ),
+			'value' => $vat_number,
+		);
+	}
+
+	// Return modified fields array
+	// WooCommerce will display these in the order details section of emails
+	return $fields;
+}
+// Hook into WooCommerce email order meta fields filter
+// Priority 10 ensures it runs at the standard time
+// Accepts 3 parameters: fields array, sent_to_admin boolean, order object
+add_filter( 'woocommerce_email_order_meta_fields', 'woocommerce_theme_email_order_meta_fields', 10, 3 );
 
 /**
  * Checkout Blocks: Add Business Type and VAT Number to Checkout block
