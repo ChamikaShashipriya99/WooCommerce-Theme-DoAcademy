@@ -1918,4 +1918,489 @@ function woocommerce_theme_wrap_order_status_with_markup( $order ) {
 // Note: This is an ACTION hook, not a filter, so we output directly
 add_action( 'woocommerce_my_account_my_orders_column_order-status', 'woocommerce_theme_wrap_order_status_with_markup', 10, 1 );
 
+/**
+ * Add Download Order Button to Order Details Page
+ *
+ * This function adds a "Download Order" button on the order details page
+ * in the My Account section. The button allows customers to download
+ * their order information as an HTML file that can be saved or printed.
+ *
+ * Hook: woocommerce_order_details_after_order_table
+ * This hook fires after the order details table on the order view page.
+ *
+ * @param WC_Order $order Order object containing order data.
+ */
+function woocommerce_theme_add_order_download_button( $order ) {
+	// Check if WooCommerce is active and order is valid
+	if ( ! class_exists( 'WooCommerce' ) || ! is_a( $order, 'WC_Order' ) ) {
+		return;
+	}
+
+	// Get order ID
+	$order_id = $order->get_id();
+
+	// Build download URL with nonce for security
+	// The nonce ensures the request is legitimate and prevents CSRF attacks
+	$download_url = wp_nonce_url(
+		add_query_arg(
+			array(
+				'download_order' => $order_id,
+			),
+			home_url( '/' )
+		),
+		'download_order_' . $order_id,
+		'order_nonce'
+	);
+
+	// Output download button
+	?>
+	<div class="woocommerce-order-download-wrapper">
+		<a href="<?php echo esc_url( $download_url ); ?>" class="button woocommerce-order-download-button">
+			<i class="fas fa-download" aria-hidden="true"></i>
+			<?php esc_html_e( 'Download Order', 'woocommerce' ); ?>
+		</a>
+	</div>
+	<?php
+}
+// Hook into WooCommerce order details after order table
+// Priority 10 ensures it displays at the standard time
+// Accepts 1 parameter: order object (WC_Order)
+add_action( 'woocommerce_order_details_after_order_table', 'woocommerce_theme_add_order_download_button', 10, 1 );
+
+/**
+ * Handle Order Download Request
+ *
+ * This function processes the order download request, validates security,
+ * and generates a downloadable HTML file containing the order details.
+ *
+ * Hook: template_redirect
+ * This hook fires before WordPress determines which template to load,
+ * allowing us to intercept the download request and serve the file.
+ */
+function woocommerce_theme_handle_order_download() {
+	// Check if this is a download request
+	if ( ! isset( $_GET['download_order'] ) ) {
+		return;
+	}
+
+	// Check if WooCommerce is active
+	if ( ! class_exists( 'WooCommerce' ) ) {
+		return;
+	}
+
+	// Get order ID from request
+	$order_id = absint( $_GET['download_order'] );
+
+	// Verify nonce for security
+	// This ensures the request came from a legitimate source
+	if ( ! isset( $_GET['order_nonce'] ) || ! wp_verify_nonce( $_GET['order_nonce'], 'download_order_' . $order_id ) ) {
+		wp_die( esc_html__( 'Security check failed. Please try again.', 'woocommerce' ), esc_html__( 'Download Error', 'woocommerce' ), array( 'response' => 403 ) );
+	}
+
+	// Get order object
+	$order = wc_get_order( $order_id );
+
+	// Check if order exists
+	if ( ! $order ) {
+		wp_die( esc_html__( 'Order not found.', 'woocommerce' ), esc_html__( 'Download Error', 'woocommerce' ), array( 'response' => 404 ) );
+	}
+
+	// Check if user is logged in
+	if ( ! is_user_logged_in() ) {
+		wp_die( esc_html__( 'You must be logged in to download orders.', 'woocommerce' ), esc_html__( 'Download Error', 'woocommerce' ), array( 'response' => 403 ) );
+	}
+
+	// Check if current user owns this order
+	// This ensures users can only download their own orders
+	$current_user_id = get_current_user_id();
+	$order_user_id   = $order->get_user_id();
+
+	// Allow download if:
+	// 1. User owns the order, OR
+	// 2. User is an administrator (for admin access)
+	if ( $order_user_id !== $current_user_id && ! current_user_can( 'manage_woocommerce' ) ) {
+		wp_die( esc_html__( 'You do not have permission to download this order.', 'woocommerce' ), esc_html__( 'Download Error', 'woocommerce' ), array( 'response' => 403 ) );
+	}
+
+	// Generate order download content
+	woocommerce_theme_generate_order_download( $order );
+
+	// Exit after sending file (prevent further execution)
+	exit;
+}
+// Hook into template_redirect to intercept download requests
+// Priority 10 ensures it runs before template loading
+add_action( 'template_redirect', 'woocommerce_theme_handle_order_download', 10 );
+
+/**
+ * Generate Order Download File
+ *
+ * This function generates an HTML file containing all order details
+ * that can be saved or printed by the customer.
+ *
+ * @param WC_Order $order Order object containing order data.
+ */
+function woocommerce_theme_generate_order_download( $order ) {
+	// Get order data
+	$order_id      = $order->get_id();
+	$order_number  = $order->get_order_number();
+	$order_date    = $order->get_date_created();
+	$order_status  = wc_get_order_status_name( $order->get_status() );
+	$order_total   = $order->get_formatted_order_total();
+
+	// Get billing information
+	$billing_first_name = $order->get_billing_first_name();
+	$billing_last_name  = $order->get_billing_last_name();
+	$billing_company    = $order->get_billing_company();
+	$billing_address_1   = $order->get_billing_address_1();
+	$billing_address_2   = $order->get_billing_address_2();
+	$billing_city        = $order->get_billing_city();
+	$billing_state       = $order->get_billing_state();
+	$billing_postcode    = $order->get_billing_postcode();
+	$billing_country     = $order->get_billing_country();
+	$billing_email       = $order->get_billing_email();
+	$billing_phone       = $order->get_billing_phone();
+
+	// Get shipping information
+	$shipping_first_name = $order->get_shipping_first_name();
+	$shipping_last_name  = $order->get_shipping_last_name();
+	$shipping_company    = $order->get_shipping_company();
+	$shipping_address_1  = $order->get_shipping_address_1();
+	$shipping_address_2   = $order->get_shipping_address_2();
+	$shipping_city       = $order->get_shipping_city();
+	$shipping_state      = $order->get_shipping_state();
+	$shipping_postcode   = $order->get_shipping_postcode();
+	$shipping_country    = $order->get_shipping_country();
+
+	// Get custom fields
+	$business_type = get_post_meta( $order_id, '_billing_business_type', true );
+	$vat_number    = get_post_meta( $order_id, '_billing_vat_number', true );
+
+	// Get order items
+	$order_items = $order->get_items();
+
+	// Get payment method
+	$payment_method_title = $order->get_payment_method_title();
+
+	// Get shipping method
+	$shipping_methods = $order->get_shipping_methods();
+	$shipping_method  = '';
+	if ( ! empty( $shipping_methods ) ) {
+		$shipping_method = reset( $shipping_methods );
+		$shipping_method = $shipping_method->get_method_title();
+	}
+
+	// Format order date
+	$formatted_date = $order_date ? $order_date->date_i18n( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ) ) : '';
+
+	// Get country names
+	$countries = WC()->countries->get_countries();
+	$billing_country_name  = isset( $countries[ $billing_country ] ) ? $countries[ $billing_country ] : $billing_country;
+	$shipping_country_name = isset( $countries[ $shipping_country ] ) ? $countries[ $shipping_country ] : $shipping_country;
+
+	// Set headers for file download
+	$filename = 'order-' . $order_number . '-' . date( 'Y-m-d' ) . '.html';
+	header( 'Content-Type: text/html; charset=utf-8' );
+	header( 'Content-Disposition: attachment; filename="' . $filename . '"' );
+	header( 'Cache-Control: must-revalidate, post-check=0, pre-check=0' );
+	header( 'Pragma: public' );
+
+	// Start HTML output
+	?>
+	<!DOCTYPE html>
+	<html lang="<?php echo esc_attr( get_locale() ); ?>">
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<title><?php echo esc_html( sprintf( __( 'Order #%s', 'woocommerce' ), $order_number ) ); ?></title>
+		<style>
+			* {
+				margin: 0;
+				padding: 0;
+				box-sizing: border-box;
+			}
+			body {
+				font-family: Arial, sans-serif;
+				font-size: 12px;
+				line-height: 1.6;
+				color: #333;
+				padding: 20px;
+				background-color: #fff;
+			}
+			.order-header {
+				border-bottom: 3px solid #0073aa;
+				padding-bottom: 20px;
+				margin-bottom: 30px;
+			}
+			.order-header h1 {
+				color: #0073aa;
+				font-size: 24px;
+				margin-bottom: 10px;
+			}
+			.order-meta {
+				display: flex;
+				flex-wrap: wrap;
+				gap: 20px;
+				margin-top: 15px;
+			}
+			.order-meta-item {
+				flex: 1;
+				min-width: 200px;
+			}
+			.order-meta-label {
+				font-weight: bold;
+				color: #666;
+				margin-bottom: 5px;
+			}
+			.order-meta-value {
+				color: #333;
+			}
+			.section {
+				margin-bottom: 30px;
+				page-break-inside: avoid;
+			}
+			.section-title {
+				background-color: #0073aa;
+				color: #fff;
+				padding: 10px 15px;
+				font-size: 16px;
+				font-weight: bold;
+				margin-bottom: 15px;
+			}
+			.address-box {
+				background-color: #f9f9f9;
+				border: 1px solid #ddd;
+				padding: 15px;
+				margin-bottom: 15px;
+			}
+			.address-box strong {
+				display: block;
+				margin-bottom: 8px;
+				color: #0073aa;
+			}
+			.order-items-table {
+				width: 100%;
+				border-collapse: collapse;
+				margin-bottom: 20px;
+			}
+			.order-items-table th {
+				background-color: #0073aa;
+				color: #fff;
+				padding: 10px;
+				text-align: left;
+				border: 1px solid #005a87;
+			}
+			.order-items-table td {
+				padding: 10px;
+				border: 1px solid #ddd;
+			}
+			.order-items-table tr:nth-child(even) {
+				background-color: #f9f9f9;
+			}
+			.order-totals {
+				width: 100%;
+				border-collapse: collapse;
+				margin-top: 20px;
+			}
+			.order-totals th,
+			.order-totals td {
+				padding: 8px 10px;
+				text-align: right;
+				border-bottom: 1px solid #ddd;
+			}
+			.order-totals th {
+				text-align: left;
+				font-weight: bold;
+			}
+			.order-totals .order-total-row {
+				font-size: 16px;
+				font-weight: bold;
+				background-color: #f0f0f0;
+			}
+			.order-totals .order-total-row th,
+			.order-totals .order-total-row td {
+				padding: 12px 10px;
+				border-top: 2px solid #0073aa;
+			}
+			.footer {
+				margin-top: 40px;
+				padding-top: 20px;
+				border-top: 1px solid #ddd;
+				text-align: center;
+				color: #666;
+				font-size: 11px;
+			}
+			@media print {
+				body {
+					padding: 10px;
+				}
+				.section {
+					page-break-inside: avoid;
+				}
+			}
+		</style>
+	</head>
+	<body>
+		<div class="order-header">
+			<h1><?php echo esc_html( sprintf( __( 'Order #%s', 'woocommerce' ), $order_number ) ); ?></h1>
+			<div class="order-meta">
+				<div class="order-meta-item">
+					<div class="order-meta-label"><?php esc_html_e( 'Order Date', 'woocommerce' ); ?>:</div>
+					<div class="order-meta-value"><?php echo esc_html( $formatted_date ); ?></div>
+				</div>
+				<div class="order-meta-item">
+					<div class="order-meta-label"><?php esc_html_e( 'Order Status', 'woocommerce' ); ?>:</div>
+					<div class="order-meta-value"><?php echo esc_html( $order_status ); ?></div>
+				</div>
+				<div class="order-meta-item">
+					<div class="order-meta-label"><?php esc_html_e( 'Payment Method', 'woocommerce' ); ?>:</div>
+					<div class="order-meta-value"><?php echo esc_html( $payment_method_title ); ?></div>
+				</div>
+			</div>
+		</div>
+
+		<div class="section">
+			<div class="section-title"><?php esc_html_e( 'Billing Address', 'woocommerce' ); ?></div>
+			<div class="address-box">
+				<strong><?php echo esc_html( trim( $billing_first_name . ' ' . $billing_last_name ) ); ?></strong>
+				<?php if ( $billing_company ) : ?>
+					<div><?php echo esc_html( $billing_company ); ?></div>
+				<?php endif; ?>
+				<div><?php echo esc_html( $billing_address_1 ); ?></div>
+				<?php if ( $billing_address_2 ) : ?>
+					<div><?php echo esc_html( $billing_address_2 ); ?></div>
+				<?php endif; ?>
+				<div>
+					<?php
+					echo esc_html( $billing_city );
+					if ( $billing_state ) {
+						echo ', ' . esc_html( $billing_state );
+					}
+					if ( $billing_postcode ) {
+						echo ' ' . esc_html( $billing_postcode );
+					}
+					?>
+				</div>
+				<div><?php echo esc_html( $billing_country_name ); ?></div>
+				<?php if ( $billing_email ) : ?>
+					<div style="margin-top: 8px;"><strong><?php esc_html_e( 'Email', 'woocommerce' ); ?>:</strong> <?php echo esc_html( $billing_email ); ?></div>
+				<?php endif; ?>
+				<?php if ( $billing_phone ) : ?>
+					<div><strong><?php esc_html_e( 'Phone', 'woocommerce' ); ?>:</strong> <?php echo esc_html( $billing_phone ); ?></div>
+				<?php endif; ?>
+				<?php if ( $business_type ) : ?>
+					<?php
+					$business_type_map = array(
+						'individual' => __( 'Individual', 'woocommerce' ),
+						'company'    => __( 'Company', 'woocommerce' ),
+					);
+					$business_type_label = isset( $business_type_map[ $business_type ] ) ? $business_type_map[ $business_type ] : $business_type;
+					?>
+					<div style="margin-top: 8px;"><strong><?php esc_html_e( 'Business Type', 'woocommerce' ); ?>:</strong> <?php echo esc_html( $business_type_label ); ?></div>
+				<?php endif; ?>
+				<?php if ( $vat_number ) : ?>
+					<div><strong><?php esc_html_e( 'VAT Number', 'woocommerce' ); ?>:</strong> <?php echo esc_html( $vat_number ); ?></div>
+				<?php endif; ?>
+			</div>
+		</div>
+
+		<?php if ( $order->needs_shipping_address() && ! empty( $shipping_address_1 ) ) : ?>
+			<div class="section">
+				<div class="section-title"><?php esc_html_e( 'Shipping Address', 'woocommerce' ); ?></div>
+				<div class="address-box">
+					<strong><?php echo esc_html( trim( $shipping_first_name . ' ' . $shipping_last_name ) ); ?></strong>
+					<?php if ( $shipping_company ) : ?>
+						<div><?php echo esc_html( $shipping_company ); ?></div>
+					<?php endif; ?>
+					<div><?php echo esc_html( $shipping_address_1 ); ?></div>
+					<?php if ( $shipping_address_2 ) : ?>
+						<div><?php echo esc_html( $shipping_address_2 ); ?></div>
+					<?php endif; ?>
+					<div>
+						<?php
+						echo esc_html( $shipping_city );
+						if ( $shipping_state ) {
+							echo ', ' . esc_html( $shipping_state );
+						}
+						if ( $shipping_postcode ) {
+							echo ' ' . esc_html( $shipping_postcode );
+						}
+						?>
+					</div>
+					<div><?php echo esc_html( $shipping_country_name ); ?></div>
+					<?php if ( $shipping_method ) : ?>
+						<div style="margin-top: 8px;"><strong><?php esc_html_e( 'Shipping Method', 'woocommerce' ); ?>:</strong> <?php echo esc_html( $shipping_method ); ?></div>
+					<?php endif; ?>
+				</div>
+			</div>
+		<?php endif; ?>
+
+		<div class="section">
+			<div class="section-title"><?php esc_html_e( 'Order Items', 'woocommerce' ); ?></div>
+			<table class="order-items-table">
+				<thead>
+					<tr>
+						<th><?php esc_html_e( 'Product', 'woocommerce' ); ?></th>
+						<th><?php esc_html_e( 'Quantity', 'woocommerce' ); ?></th>
+						<th><?php esc_html_e( 'Price', 'woocommerce' ); ?></th>
+						<th><?php esc_html_e( 'Total', 'woocommerce' ); ?></th>
+					</tr>
+				</thead>
+				<tbody>
+					<?php
+					foreach ( $order_items as $item_id => $item ) {
+						$product = $item->get_product();
+						$product_name = $item->get_name();
+						$quantity = $item->get_quantity();
+						$item_total = $order->get_formatted_line_subtotal( $item );
+						?>
+						<tr>
+							<td>
+								<?php echo esc_html( $product_name ); ?>
+								<?php
+								// Display variation attributes if available
+								$meta_data = $item->get_formatted_meta_data( '_', true );
+								if ( ! empty( $meta_data ) ) {
+									echo '<div style="font-size: 11px; color: #666; margin-top: 5px;">';
+									foreach ( $meta_data as $meta ) {
+										echo esc_html( $meta->display_key . ': ' . $meta->display_value ) . '<br>';
+									}
+									echo '</div>';
+								}
+								?>
+							</td>
+							<td><?php echo esc_html( $quantity ); ?></td>
+							<td><?php echo wp_kses_post( $order->get_formatted_line_subtotal( $item, true, true ) ); ?></td>
+							<td><?php echo wp_kses_post( $item_total ); ?></td>
+						</tr>
+						<?php
+					}
+					?>
+				</tbody>
+			</table>
+
+			<table class="order-totals">
+				<?php
+				// Display order totals
+				foreach ( $order->get_order_item_totals() as $key => $total ) {
+					?>
+					<tr class="<?php echo ( 'order_total' === $key ) ? 'order-total-row' : ''; ?>">
+						<th><?php echo esc_html( $total['label'] ); ?></th>
+						<td><?php echo wp_kses_post( $total['value'] ); ?></td>
+					</tr>
+					<?php
+				}
+				?>
+			</table>
+		</div>
+
+		<div class="footer">
+			<p><?php echo esc_html( sprintf( __( 'This is a copy of order #%s from %s', 'woocommerce' ), $order_number, get_bloginfo( 'name' ) ) ); ?></p>
+			<p><?php echo esc_html( sprintf( __( 'Generated on %s', 'woocommerce' ), current_time( 'Y-m-d H:i:s' ) ) ); ?></p>
+		</div>
+	</body>
+	</html>
+	<?php
+}
+
 
