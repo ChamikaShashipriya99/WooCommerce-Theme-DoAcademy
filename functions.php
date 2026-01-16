@@ -437,16 +437,6 @@ function woocommerce_theme_shop_poster_banner() {
 				class="shop-hero-banner__image"
 			/>
 		</div>
-		<div class="shop-hero-banner__inner">
-			<div class="shop-hero-banner__content">
-				<h1 class="shop-hero-banner__title">
-					<?php echo esc_html( get_the_title( wc_get_page_id( 'shop' ) ) ); ?>
-				</h1>
-				<p class="shop-hero-banner__subtitle">
-					<?php esc_html_e( 'Discover our latest deals, best sellers and imported items in one place.', 'woocommerce' ); ?>
-				</p>
-			</div>
-		</div>
 	</section>
 	<?php
 }
