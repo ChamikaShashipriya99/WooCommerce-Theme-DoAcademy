@@ -207,11 +207,10 @@
 					/**
 				 * Handle AJAX Errors Gracefully
 				 * 
-				 * If the AJAX request fails, we log an error but don't break the page.
+				 * If the AJAX request fails, we silently fail to prevent user confusion.
 				 * The cart will update correctly on the next page load, so this is
-				 * a non-critical failure. Silent failure prevents user confusion.
+				 * a non-critical failure.
 				 */
-					console.log('Mini cart fragment refresh failed');
 				}
 			});
 		} else if (typeof wc_cart_params !== 'undefined') {
@@ -239,7 +238,7 @@
 					}
 				},
 				error: function() {
-					console.log('Mini cart fragment refresh failed');
+					// Silently fail - cart will update on next page load
 				}
 			});
 		}

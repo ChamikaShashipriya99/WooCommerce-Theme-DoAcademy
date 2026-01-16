@@ -391,39 +391,6 @@ function woocommerce_theme_wrapper_end() {
  */
 add_action( 'woocommerce_after_main_content', 'woocommerce_theme_wrapper_end', 10 );
 
-/**
- * Ensure WooCommerce Pages Load Correctly
- *
- * This function ensures that shop, product, cart, and checkout pages
- * have the proper theme structure by ensuring header and footer are loaded.
- * WooCommerce templates automatically call get_header() and get_footer(),
- * but we verify the structure is correct.
- */
-function woocommerce_theme_ensure_page_structure() {
-	// Check if WooCommerce is active
-	if ( ! class_exists( 'WooCommerce' ) ) {
-		return;
-	}
-
-	// Check if we're on a WooCommerce page
-	if ( ! is_woocommerce() && ! is_cart() && ! is_checkout() && ! is_account_page() ) {
-		return;
-	}
-
-	/**
-	 * Note: WooCommerce templates automatically include:
-	 * - get_header() at the start
-	 * - get_footer() at the end
-	 * 
-	 * Our custom wrappers (added above) ensure the content area
-	 * matches our theme's structure between header and footer.
-	 * 
-	 * No additional action needed here - the wrapper hooks handle it.
-	 */
-}
-// Hook into 'template_redirect' action
-// This runs before the template is loaded, allowing us to verify structure
-add_action( 'template_redirect', 'woocommerce_theme_ensure_page_structure' );
 
 /**
  * Shop Page Poster / Hero Banner
@@ -1850,28 +1817,6 @@ function woocommerce_ajax_mini_cart_fragments_cart_updated( $fragments ) {
 // This is called when cart is updated via AJAX (removals, quantity changes)
 // Priority 10 is standard, accepts 1 parameter (fragments array)
 add_filter( 'woocommerce_update_order_review_fragments', 'woocommerce_ajax_mini_cart_fragments_cart_updated', 10, 1 );
-
-/**
- * Ensure Fragments Are Always Included in get_refreshed_fragments
- *
- * This function ensures our mini cart fragments are always included when
- * WooCommerce's get_refreshed_fragments endpoint is called. This endpoint
- * is used to refresh fragments after cart updates (removals, quantity changes).
- * By hooking into the filter that processes this endpoint, we ensure our
- * fragments are always available.
- *
- * Note: The woocommerce_add_to_cart_fragments filter is already hooked,
- * but we also ensure it works for the get_refreshed_fragments endpoint
- * which is called after cart removals.
- */
-function woocommerce_ensure_fragments_on_refresh() {
-	// The woocommerce_add_to_cart_fragments filter is already registered
-	// and will be called by WooCommerce's get_refreshed_fragments endpoint
-	// No additional action needed here - the filter handles it
-}
-// This is just a placeholder - the actual filter is already registered above
-// WooCommerce's get_refreshed_fragments endpoint automatically calls
-// woocommerce_add_to_cart_fragments filter, so our fragments will be included
 
 /**
  * My Account: Ensure Order Status Labels Have Proper Markup and Classes

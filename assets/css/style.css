@@ -112,12 +112,6 @@ body {
  * Mobile-first: Stacked layout on small screens, horizontal on larger
  * Sticky navigation: Header stays fixed at top when scrolling
  */
-/**
- * Site header
- * Contains site branding and navigation
- * Mobile-first: Stacked layout on small screens, horizontal on larger
- * Sticky navigation: Header stays fixed at top when scrolling
- */
 .site-header {
 	background-color: #f5f5f5;
 	border-bottom: 1px solid #e0e0e0;
