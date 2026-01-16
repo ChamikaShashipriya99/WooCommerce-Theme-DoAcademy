@@ -436,8 +436,9 @@
 		 * - '.woocommerce-cart-form .remove': Cart page remove buttons
 		 * - '.cart .remove': Alternative cart page selector
 		 * - 'a.remove': Generic remove link selector
+		 * - '.remove_from_cart_button': WooCommerce block-based cart remove buttons
 		 */
-		$(document).on('click', '.woocommerce-cart-form .remove, .cart .remove, a.remove', function(e) {
+		$(document).on('click', '.woocommerce-cart-form .remove, .cart .remove, a.remove, .remove_from_cart_button', function(e) {
 			/**
 			 * Store Current Cart Count
 			 * 
@@ -450,22 +451,28 @@
 			/**
 			 * Fetch Fragments After Removal
 			 * 
-			 * We use two timeouts with different delays to handle various scenarios:
-			 * - First timeout (400ms): Handles standard removal operations
-			 * - Second timeout (800ms): Handles slower server responses or complex removals
+			 * We use multiple timeouts with different delays to handle various scenarios:
+			 * - First timeout (300ms): Handles fast AJAX removals
+			 * - Second timeout (600ms): Handles standard removal operations
+			 * - Third timeout (1000ms): Handles slower server responses or complex removals
 			 * 
-			 * Why two timeouts:
+			 * Why multiple timeouts:
 			 * - Some removals take longer to process (e.g., with plugins)
 			 * - Ensures update happens even if first attempt is too early
 			 * - Provides redundancy for reliability
+			 * - Handles both AJAX and non-AJAX removals
 			 */
 			setTimeout(function() {
 				fetchCartFragments();
-			}, 400);
+			}, 300);
 			
 			setTimeout(function() {
 				fetchCartFragments();
-			}, 800);
+			}, 600);
+			
+			setTimeout(function() {
+				fetchCartFragments();
+			}, 1000);
 		});
 
 		/**
@@ -530,8 +537,12 @@
 			 * - 'remove_cart_item': Another removal variant
 			 * - 'update_cart': Cart quantity updates
 			 * - 'get_refreshed_fragments': Explicit fragment refresh
+			 * - 'cart': General cart operations
 			 */
 			var url = settings.url || '';
+			var isCartOperation = false;
+			
+			// Check for cart-related URL patterns
 			if (url.indexOf('remove_item') !== -1 ||
 				url.indexOf('wc-ajax=remove_item') !== -1 ||
 				url.indexOf('remove_from_cart') !== -1 ||
@@ -540,8 +551,23 @@
 				url.indexOf('wc-ajax=remove_cart_item') !== -1 ||
 				url.indexOf('update_cart') !== -1 ||
 				url.indexOf('wc-ajax=update_cart') !== -1 ||
-				url.indexOf('get_refreshed_fragments') !== -1) {
-				
+				url.indexOf('get_refreshed_fragments') !== -1 ||
+				url.indexOf('wc-ajax=cart') !== -1 ||
+				url.indexOf('/cart/') !== -1) {
+				isCartOperation = true;
+			}
+			
+			// Also check if we're on cart page and request succeeded
+			if (!isCartOperation && $('body').hasClass('woocommerce-cart') && xhr.status === 200) {
+				// Check if response contains cart-related content
+				var responseText = xhr.responseText || '';
+				if (responseText.indexOf('cart_item') !== -1 || 
+					responseText.indexOf('woocommerce-cart-form') !== -1) {
+					isCartOperation = true;
+				}
+			}
+			
+			if (isCartOperation) {
 				/**
 				 * Extract Fragments from AJAX Response
 				 * 
@@ -565,14 +591,19 @@
 						 * Some cart operations don't include fragments in their response.
 						 * In these cases, we make a separate request to get updated fragments.
 						 * 
-						 * Why delay:
+						 * Why multiple delays:
 						 * - Ensures the cart operation has completed on server
 						 * - Prevents fetching fragments before cart state is updated
 						 * - Common for remove_item operations that don't return fragments
+						 * - Handles both fast and slow server responses
 						 */
 						setTimeout(function() {
 							fetchCartFragments();
 						}, 300);
+						
+						setTimeout(function() {
+							fetchCartFragments();
+						}, 800);
 					}
 				} catch (e) {
 					/**
@@ -585,6 +616,10 @@
 					setTimeout(function() {
 						fetchCartFragments();
 					}, 300);
+					
+					setTimeout(function() {
+						fetchCartFragments();
+					}, 800);
 				}
 			}
 		});
@@ -599,6 +634,7 @@
 		 * - Detects DOM changes that don't trigger WooCommerce events
 		 * - Catches removals handled by other scripts or plugins
 		 * - Provides additional layer of cart synchronization
+		 * - Works even when AJAX events don't fire properly
 		 * 
 		 * How it works:
 		 * - Observes the cart form for child element changes
@@ -621,10 +657,30 @@
 				 * childList mutations indicate elements were added/removed.
 				 * We check if the mutation target is the cart table or within it.
 				 */
-				if (mutation.type === 'childList' && 
-					(mutation.target.classList.contains('shop_table') || 
-					 mutation.target.closest('.woocommerce-cart-form'))) {
-					cartTableChanged = true;
+				if (mutation.type === 'childList') {
+					// Check if removed nodes contain cart items
+					if (mutation.removedNodes.length > 0) {
+						for (var i = 0; i < mutation.removedNodes.length; i++) {
+							var node = mutation.removedNodes[i];
+							if (node.nodeType === 1) { // Element node
+								if (node.classList && (
+									node.classList.contains('cart_item') ||
+									node.classList.contains('woocommerce-cart-form__cart-item') ||
+									node.closest && node.closest('.woocommerce-cart-form')
+								)) {
+									cartTableChanged = true;
+									break;
+								}
+							}
+						}
+					}
+					// Also check if mutation is within cart form
+					if (!cartTableChanged && (
+						mutation.target.classList && mutation.target.classList.contains('shop_table') ||
+						(mutation.target.closest && mutation.target.closest('.woocommerce-cart-form'))
+					)) {
+						cartTableChanged = true;
+					}
 				}
 			});
 			
@@ -633,11 +689,16 @@
 			 * 
 			 * If we detected cart table changes, fetch updated fragments to
 			 * synchronize the mini cart with the main cart display.
+			 * Use multiple timeouts to ensure we catch the update after DOM settles.
 			 */
 			if (cartTableChanged) {
 				setTimeout(function() {
 					fetchCartFragments();
-				}, 200); // Delay ensures DOM changes are complete
+				}, 300);
+				
+				setTimeout(function() {
+					fetchCartFragments();
+				}, 800);
 			}
 		});
 
@@ -656,6 +717,54 @@
 			cartObserver.observe($cartForm[0], {
 				childList: true,
 				subtree: true
+			});
+		}
+
+		/**
+		 * Listen for Cart Form Updates
+		 * 
+		 * WooCommerce may trigger custom events when the cart form is updated.
+		 * This listener catches those events and updates the mini cart.
+		 * 
+		 * Events listened for:
+		 * - 'wc_fragment_refresh': WooCommerce fragment refresh
+		 * - 'wc_cart_updated': Custom cart update event
+		 * - 'cart_updated': Alternative cart update event
+		 */
+		$(document.body).on('wc_fragment_refresh wc_cart_updated cart_updated', function() {
+			setTimeout(function() {
+				fetchCartFragments();
+			}, 300);
+		});
+
+		/**
+		 * Watch for Cart Item Count Changes (Fallback)
+		 * 
+		 * As a last resort, periodically check if cart item count has changed.
+		 * This ensures mini cart updates even if all other methods fail.
+		 * Only runs on cart page to avoid unnecessary checks.
+		 * 
+		 * This is a lightweight fallback that checks every 3 seconds when on cart page.
+		 */
+		if ($('body').hasClass('woocommerce-cart')) {
+			var lastCartCount = parseInt($('.mini-cart__trigger-count').text()) || 0;
+			var cartCheckInterval = setInterval(function() {
+				// Count cart items in the cart table
+				var currentCartItems = $('.woocommerce-cart-form .cart_item, .cart .cart_item').length;
+				var currentMiniCartCount = parseInt($('.mini-cart__trigger-count').text()) || 0;
+				
+				// If counts don't match, update mini cart
+				if (currentCartItems !== currentMiniCartCount && currentCartItems >= 0) {
+					fetchCartFragments();
+					lastCartCount = currentMiniCartCount;
+				}
+			}, 3000); // Check every 3 seconds (lightweight fallback)
+
+			// Clear interval when leaving cart page
+			$(window).on('beforeunload', function() {
+				if (cartCheckInterval) {
+					clearInterval(cartCheckInterval);
+				}
 			});
 		}
 	}
