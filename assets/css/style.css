@@ -782,306 +782,6 @@ article:last-child {
 	}
 }
 
-/* ==========================================================================
-   Product Cards
-   ========================================================================== */
-
-/**
- * WooCommerce Products Grid Container
- * 
- * This styles the product grid used on shop pages, category pages, related products,
- * upsells, and cross-sells. CSS Grid provides a flexible, responsive layout system.
- * 
- * Why CSS Grid:
- * - Automatically handles responsive column layouts
- * - Provides consistent spacing between products
- * - Easier to maintain than float-based layouts
- * - Better control over product card alignment
- * 
- * Mobile-first approach:
- * - Default: 1 column (mobile devices)
- * - Tablet (768px+): 2 columns (via media query)
- * - Desktop (1200px+): 3-4 columns (via media query)
- * 
- * Selectors explained:
- * - .woocommerce ul.products: Main shop page product grid
- * - .related.products ul.products: Related products on single product pages
- * - .upsells.products ul.products: Upsell products on single product pages
- * - .cross-sells ul.products: Cross-sell products on cart page
- * 
- * Why !important:
- * - Overrides WooCommerce default styles that may conflict
- * - Ensures grid layout is applied consistently
- * - Prevents theme conflicts with WooCommerce core styles
- */
-.woocommerce ul.products,
-.woocommerce .related.products ul.products,
-.woocommerce .upsells.products ul.products,
-.woocommerce .cross-sells ul.products {
-	list-style: none; /* Removes default bullet points from list */
-	margin: 0; /* Removes default list margins */
-	padding: 0; /* Removes default list padding */
-	display: grid !important; /* Forces CSS Grid layout (overrides WooCommerce defaults) */
-	grid-template-columns: 1fr; /* Single column by default (mobile-first) */
-	gap: 1.5rem; /* Spacing between product cards */
-	width: 100%; /* Full width of container */
-}
-
-/**
- * Related Products Section
- * Ensures proper spacing and layout for related products
- */
-.woocommerce .related.products,
-.woocommerce .upsells.products {
-	margin-top: 3rem;
-	padding-top: 2rem;
-	border-top: 1px solid #e0e0e0;
-	clear: both;
-}
-
-.woocommerce .related.products h2,
-.woocommerce .upsells.products h2 {
-	font-size: 1.5rem;
-	font-weight: 600;
-	margin-bottom: 1.5rem;
-	color: #333;
-}
-
-/**
- * Ensure related products container doesn't have conflicting styles
- * Target all possible WooCommerce related products selectors
- */
-.woocommerce .related.products ul,
-.woocommerce .upsells.products ul,
-.woocommerce .related.products ul.products,
-.woocommerce .upsells.products ul.products,
-section.related.products ul.products,
-section.upsells.products ul.products,
-.woocommerce-page .related.products ul,
-.woocommerce-page .upsells.products ul {
-	display: grid !important;
-	list-style: none !important;
-	margin: 0 !important;
-	padding: 0 !important;
-	width: 100% !important;
-	max-width: 100% !important;
-	grid-template-columns: 1fr !important;
-	gap: 1.5rem !important;
-	clear: both !important;
-}
-
-/**
- * Ensure related products section container doesn't constrain width
- */
-.woocommerce .related.products,
-.woocommerce .upsells.products,
-section.related.products,
-section.upsells.products,
-.woocommerce-page .related.products,
-.woocommerce-page .upsells.products {
-	width: 100% !important;
-	max-width: 100% !important;
-	clear: both;
-	overflow: visible !important;
-}
-
-/**
- * Override any inline styles or WooCommerce defaults
- * Remove any float or display properties that might interfere
- */
-.woocommerce .related.products ul li.product,
-.woocommerce .upsells.products ul li.product,
-.woocommerce .related.products ul.products li.product,
-.woocommerce .upsells.products ul.products li.product,
-section.related.products ul.products li.product,
-section.upsells.products ul.products li.product {
-	width: 100% !important;
-	max-width: 100% !important;
-	float: none !important;
-	display: flex !important;
-	flex-direction: column;
-	margin: 0 !important;
-	clear: none !important;
-}
-
-/**
- * Individual Product Card
- * Clean, minimal card design with subtle borders
- */
-.woocommerce ul.products li.product {
-	position: relative;
-	background: #fff;
-	border: 1px solid #e0e0e0;
-	border-radius: 4px;
-	overflow: hidden;
-	transition: box-shadow 0.2s ease, transform 0.2s ease;
-	display: flex;
-	flex-direction: column;
-}
-
-.woocommerce ul.products li.product:hover {
-	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-	transform: translateY(-2px);
-}
-
-/**
- * Product Image Container
- * Maintains aspect ratio and handles image display
- */
-.woocommerce ul.products li.product .woocommerce-loop-product__link {
-	display: block;
-	position: relative;
-	overflow: hidden;
-	background: #f8f8f8;
-}
-
-.woocommerce ul.products li.product img {
-	width: 100%;
-	height: auto;
-	display: block;
-	transition: transform 0.3s ease;
-}
-
-.woocommerce ul.products li.product:hover img {
-	transform: scale(1.05);
-}
-
-/**
- * Product Information Section
- * Contains title, price, and add to cart button
- */
-.woocommerce ul.products li.product .product-info {
-	padding: 0.8rem 1.4rem; /* extra left/right padding for text inside cards */
-	flex: 1;
-	display: flex;
-	flex-direction: column;
-}
-
-/**
- * Product Title
- * Clean typography with proper spacing
- */
-.woocommerce ul.products li.product .woocommerce-loop-product__title {
-	font-size: 1rem;
-	font-weight: 600;
-	margin: 0 0 0.5rem 0;
-	line-height: 1.4;
-	color: #333;
-}
-
-.woocommerce ul.products li.product .woocommerce-loop-product__title a {
-	color: #333;
-	text-decoration: none;
-	transition: color 0.2s ease;
-}
-
-.woocommerce ul.products li.product .woocommerce-loop-product__title a:hover {
-	color: #0073aa;
-}
-
-/**
- * Product Price
- * Prominent price display
- */
-.woocommerce ul.products li.product .price {
-	font-size: 1.125rem;
-	font-weight: 600;
-	color: #333;
-	margin: 0.5rem 0;
-	line-height: 1.4;
-}
-
-.woocommerce ul.products li.product .price del {
-	color: #999;
-	font-weight: 400;
-	font-size: 0.9rem;
-	margin-right: 0.5rem;
-}
-
-.woocommerce ul.products li.product .price ins {
-	text-decoration: none;
-	color: #d32f2f;
-}
-
-/**
- * Product Badges (Sale, New, Featured, etc.)
- * Default badge positioning – single product pages keep WooCommerce style
- */
-.woocommerce span.onsale {
-	position: absolute;
-	top: 0.75rem;
-	left: 0.75rem;
-	background: #d32f2f;
-	color: #fff;
-	font-size: 0.75rem;
-	font-weight: 600;
-	padding: 0.375rem 0.625rem;
-	border-radius: 3px;
-	text-transform: uppercase;
-	letter-spacing: 0.5px;
-	z-index: 10;
-	line-height: 1.2;
-}
-
-/**
- * Product Cards: SALE label – distinct pill style just for grid cards
- */
-.woocommerce ul.products li.product .onsale {
-	position: absolute;
-	top: 12px;
-	left: 12px;
-	z-index: 20;
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	padding: 6px 14px;
-	min-width: 60px;
-	border-radius: 999px;
-	font-size: 11px;
-	font-weight: 700;
-	letter-spacing: 0.08em;
-	text-transform: uppercase;
-	color: #ffffff;
-	background: linear-gradient(135deg, #ff6a00 0%, #ff3d3d 50%, #ff0080 100%);
-	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
-	border: 1px solid rgba(255, 255, 255, 0.35);
-	backdrop-filter: blur(3px);
-	-webkit-backdrop-filter: blur(3px);
-}
-
-.woocommerce ul.products li.product:hover .onsale {
-	box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
-	transform: translateY(-1px);
-	transition: all 0.25s ease;
-}
-
-/**
- * Placeholder for custom product badges
- * Use this class to add custom badges (New, Featured, etc.)
- */
-.woocommerce ul.products li.product .product-badge {
-	position: absolute;
-	top: 0.75rem;
-	right: 0.75rem;
-	background: #333;
-	color: #fff;
-	font-size: 0.75rem;
-	font-weight: 600;
-	padding: 0.375rem 0.625rem;
-	border-radius: 3px;
-	text-transform: uppercase;
-	letter-spacing: 0.5px;
-	z-index: 10;
-	line-height: 1.2;
-}
-
-.woocommerce ul.products li.product .product-badge.new {
-	background: #4caf50;
-}
-
-.woocommerce ul.products li.product .product-badge.featured {
-	background: #ff9800;
-}
 
 /* ==========================================================================
    Buttons
@@ -1116,37 +816,6 @@ section.upsells.products ul.products li.product {
 	width: 100%;
 }
 
-/**
- * Product Cards: primary button styling (Add to cart, Select options, etc.)
- * Only affects buttons inside product cards, builds on global button styles
- */
-.woocommerce ul.products li.product .button {
-	margin-top: auto;
-	position: relative;
-	overflow: hidden;
-	border-radius: 999px;
-	padding: 0.7rem 1.75rem;
-	font-size: 0.9rem;
-	font-weight: 600;
-	text-transform: uppercase;
-	letter-spacing: 0.06em;
-	background: linear-gradient(135deg, #0073aa 0%, #005a87 100%);
-	border-color: transparent;
-	color: #ffffff;
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	gap: 0.4rem;
-	box-shadow: 0 6px 14px rgba(0, 0, 0, 0.16);
-}
-
-.woocommerce ul.products li.product .button:hover {
-	background: linear-gradient(135deg, #005a87 0%, #00486b 100%);
-	transform: translateY(-1px);
-	box-shadow: 0 8px 18px rgba(0, 0, 0, 0.2);
-	color: #ffffff;
-	text-decoration: none;
-}
 
 .woocommerce a.button:hover,
 .woocommerce button.button:hover,
@@ -1256,14 +925,6 @@ section.upsells.products ul.products li.product {
 	font-size: 1.5rem;
 }
 
-.woocommerce ul.products {
-	grid-template-columns: 1fr;
-	gap: 1rem;
-}
-
-.woocommerce ul.products li.product .product-info {
-	padding: 0.75rem 1.4rem;
-}
 
 /* ==========================================================================
    iPad: 768px to 1199px
@@ -1303,20 +964,6 @@ section.upsells.products ul.products li.product {
 		padding: 2rem 1.5rem;
 	}
 
-	.woocommerce ul.products,
-	.woocommerce .related.products ul.products,
-	.woocommerce .upsells.products ul.products,
-	.woocommerce .related.products ul,
-	.woocommerce .upsells.products ul,
-	section.related.products ul.products,
-	section.upsells.products ul.products {
-		grid-template-columns: repeat(2, 1fr) !important;
-		gap: 2rem !important;
-	}
-
-	.woocommerce ul.products li.product .product-info {
-		padding: 1rem;
-	}
 
 	.woocommerce a.button,
 	.woocommerce button.button,
@@ -1369,16 +1016,6 @@ section.upsells.products ul.products li.product {
 		padding: 2rem 1.5rem;
 	}
 
-	.woocommerce ul.products,
-	.woocommerce .related.products ul.products,
-	.woocommerce .upsells.products ul.products,
-	.woocommerce .related.products ul,
-	.woocommerce .upsells.products ul,
-	section.related.products ul.products,
-	section.upsells.products ul.products {
-		grid-template-columns: repeat(3, 1fr) !important;
-		gap: 2rem !important;
-	}
 
 	.woocommerce a.button,
 	.woocommerce button.button,
@@ -1392,44 +1029,8 @@ section.upsells.products ul.products li.product {
 	}
 }
 
-/* Desktop Large: 1366px+ (Laptop) - 3 columns maintained */
-@media (min-width: 1366px) {
-	.woocommerce ul.products,
-	.woocommerce .related.products ul.products,
-	.woocommerce .upsells.products ul.products,
-	.woocommerce .related.products ul,
-	.woocommerce .upsells.products ul,
-	section.related.products ul.products,
-	section.upsells.products ul.products {
-		grid-template-columns: repeat(3, 1fr) !important;
-	}
-}
 
-/* Desktop XL: 1440px+ (MacBook 13") - 4 columns */
-@media (min-width: 1440px) {
-	.woocommerce ul.products,
-	.woocommerce .related.products ul.products,
-	.woocommerce .upsells.products ul.products,
-	.woocommerce .related.products ul,
-	.woocommerce .upsells.products ul,
-	section.related.products ul.products,
-	section.upsells.products ul.products {
-		grid-template-columns: repeat(4, 1fr) !important;
-	}
-}
 
-/* Desktop XXL: 1680px+ (22" Desktop) - 4 columns maintained */
-@media (min-width: 1680px) {
-	.woocommerce ul.products,
-	.woocommerce .related.products ul.products,
-	.woocommerce .upsells.products ul.products,
-	.woocommerce .related.products ul,
-	.woocommerce .upsells.products ul,
-	section.related.products ul.products,
-	section.upsells.products ul.products {
-		grid-template-columns: repeat(4, 1fr) !important;
-	}
-}
 
 /* Desktop Max: 1920px (1080p) - Max width constraint */
 @media (min-width: 1920px) {
@@ -1442,16 +1043,6 @@ section.upsells.products ul.products li.product {
 		margin-right: auto;
 	}
 
-	.woocommerce ul.products,
-	.woocommerce .related.products ul.products,
-	.woocommerce .upsells.products ul.products,
-	.woocommerce .related.products ul,
-	.woocommerce .upsells.products ul,
-	section.related.products ul.products,
-	section.upsells.products ul.products {
-		grid-template-columns: repeat(4, 1fr) !important;
-		max-width: 1920px;
-	}
 }
 
 /* ==========================================================================
@@ -1493,43 +1084,6 @@ body #secondary {
 	padding: 0 !important;
 }
 
-/* Product Origin Badge Styles - Professional Design */
-/* Ensure product item and image container have relative positioning for absolute badge placement */
-.woocommerce ul.products li.product,
-.woocommerce-page ul.products li.product {
-	position: relative;
-}
-
-.woocommerce ul.products li.product a.woocommerce-LoopProduct-link,
-.woocommerce-page ul.products li.product a.woocommerce-LoopProduct-link,
-.woocommerce ul.products li.product .woocommerce-loop-product__link,
-.woocommerce-page ul.products li.product .woocommerce-loop-product__link {
-	position: relative;
-	display: block;
-}
-
-.product-origin-badge-wrapper {
-	position: absolute;
-	top: 70%;
-	right: 12px;
-	transform: translateY(-50%);
-	z-index: 30 !important;
-	display: block !important;
-	pointer-events: none;
-}
-
-/* Ensure badge appears over product image area - multiple selectors for compatibility */
-.woocommerce ul.products li.product .product-origin-badge-wrapper,
-.woocommerce-page ul.products li.product .product-origin-badge-wrapper,
-.woocommerce ul.products li.product a .product-origin-badge-wrapper,
-.woocommerce-page ul.products li.product a .product-origin-badge-wrapper {
-	position: absolute !important;
-	top: 70% !important;
-	right: 12px !important;
-	transform: translateY(-50%) !important;
-	z-index: 30 !important;
-	display: block !important;
-}
 
 .product-origin-badge {
 	display: inline-block !important;
