@@ -187,6 +187,20 @@ function woocommerce_theme_enqueue_assets() {
 		$theme_version,                                 // Version (for cache busting)
 		true                                            // Load in footer (better performance)
 	);
+
+	/**
+	 * Enqueue Mobile Menu JavaScript
+	 * 
+	 * Handles hamburger menu toggle functionality for mobile devices.
+	 * The menu slides in from left to right when the hamburger icon is clicked.
+	 */
+	wp_enqueue_script(
+		'woocommerce-mobile-menu',                      // Handle (unique identifier)
+		get_template_directory_uri() . '/assets/js/mobile-menu.js', // Path to JavaScript file
+		array( 'jquery' ),                               // Dependencies (jQuery is required)
+		$theme_version,                                 // Version (for cache busting)
+		true                                            // Load in footer (better performance)
+	);
 }
 /**
  * Hook Registration: wp_enqueue_scripts

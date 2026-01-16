@@ -89,14 +89,13 @@ if ( function_exists( 'wp_body_open' ) ) {
 					/**
 					 * Fallback: Display Site Title as Text Link
 					 * 
-					 * If no custom logo is set, display the site title from
-					 * Settings > General > Site Title. This ensures branding
-					 * is always visible, even without a logo image.
+					 * If no custom logo is set, display "CSK" as the site branding.
+					 * This ensures branding is always visible, even without a logo image.
 					 */
 					?>
 					<h1 class="site-title">
 						<a href="<?php echo esc_url( home_url( '/' ) ); ?>" rel="home">
-							<?php bloginfo( 'name' ); ?>
+							<?php echo esc_html( 'CSK' ); ?>
 						</a>
 					</h1>
 					<?php
@@ -123,6 +122,16 @@ if ( function_exists( 'wp_body_open' ) ) {
 				}
 				?>
 			</div><!-- .site-branding -->
+
+			<button type="button" class="menu-toggle" id="menu-toggle" aria-controls="primary-menu" aria-expanded="false" aria-label="<?php esc_attr_e( 'Toggle primary menu', 'woocommerce' ); ?>">
+				<span class="menu-toggle-icon">
+					<span class="menu-toggle-line"></span>
+					<span class="menu-toggle-line"></span>
+					<span class="menu-toggle-line"></span>
+				</span>
+			</button>
+
+			<div class="menu-overlay" id="menu-overlay"></div>
 
 			<nav id="site-navigation" class="main-navigation" role="navigation" aria-label="<?php esc_attr_e( 'Primary Menu', 'woocommerce' ); ?>">
 				<?php
