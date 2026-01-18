@@ -698,13 +698,17 @@ function woocommerce_theme_apply_automatic_discount( $cart ) {
 	// This is the base amount we use for discount calculation
 	$cart_subtotal = $cart->get_subtotal();
 
-	// Discount threshold: LKR 20,000
-	// Orders must exceed this amount to qualify for discount
-	$discount_threshold = 20000;
+	// Get discount threshold from admin settings
+	// get_option() retrieves saved value from database
+	// Option name: 'wc_auto_discount_threshold'
+	$discount_threshold = get_option( 'wc_auto_discount_threshold' );
 
-	// Discount percentage: 20%
-	// This is the percentage applied to the cart subtotal
-	$discount_percentage = 0.20; // 20% as decimal (0.20)
+	// Get discount percentage from admin settings
+	// get_option() retrieves saved value from database
+	// Option name: 'wc_auto_discount_percentage'
+	// Settings are stored as percentage (e.g., 20 for 20%), so we divide by 100
+	$discount_percentage_raw = get_option( 'wc_auto_discount_percentage' );
+	$discount_percentage = floatval( $discount_percentage_raw ) / 100;
 
 	// Check if cart subtotal exceeds the threshold
 	// Only apply discount if subtotal is greater than LKR 20,000
@@ -719,7 +723,10 @@ function woocommerce_theme_apply_automatic_discount( $cart ) {
 
 	// Discount fee name (used for identification and display)
 	// This name appears in the cart totals section
-	$discount_fee_name = __( 'Bulk Order Discount (20%)', 'woocommerce' );
+	// Dynamically includes the percentage from settings
+	$discount_percentage_display = get_option( 'wc_auto_discount_percentage' );
+	// Use %g to handle both integer and decimal percentages (e.g., 20 or 20.5)
+	$discount_fee_name = sprintf( __( 'Bulk Order Discount (%g%%)', 'woocommerce' ), $discount_percentage_display );
 
 	// Check if discount fee already exists to prevent duplicate application
 	// get_fees() returns all fees currently applied to the cart
@@ -761,6 +768,123 @@ function woocommerce_theme_apply_automatic_discount( $cart ) {
 // Priority 10 ensures it runs at the standard time during cart calculation
 // Accepts 1 parameter: cart object (WC_Cart)
 add_action( 'woocommerce_cart_calculate_fees', 'woocommerce_theme_apply_automatic_discount', 10, 1 );
+
+/**
+ * Admin: Add Automatic Discount Settings Fields to Products Tab
+ *
+ * This function adds settings fields for automatic discount configuration
+ * to the WooCommerce > Settings > Products tab. Admins can configure
+ * the discount threshold and percentage through the admin interface.
+ *
+ * Hook: woocommerce_get_settings_products
+ * This filter allows us to add fields to the Products settings tab.
+ *
+ * @param array $settings Array of existing settings for the Products tab.
+ * @return array Modified settings array with discount fields added.
+ */
+function woocommerce_theme_add_discount_settings_fields( $settings ) {
+	// Check if WooCommerce is active
+	if ( ! class_exists( 'WooCommerce' ) ) {
+		return $settings;
+	}
+
+	// Add our discount section at the end of the settings array
+	// This ensures all existing settings are preserved
+	$settings[] = array(
+		'title' => __( 'Automatic Discount Settings', 'woocommerce' ),
+		'type'  => 'title',
+		'desc'  => __( 'Configure automatic discount that applies when cart subtotal exceeds a specified threshold.', 'woocommerce' ),
+		'id'    => 'automatic_discount_options',
+	);
+
+	// Add discount threshold field
+	$settings[] = array(
+		'title'       => __( 'Discount Threshold (LKR)', 'woocommerce' ),
+		'desc'        => __( 'Minimum cart subtotal required to apply automatic discount. Enter amount without currency symbol (e.g., 20000).', 'woocommerce' ),
+		'id'          => 'wc_auto_discount_threshold',
+		'type'        => 'number',
+		'default'     => '20000',
+		'desc_tip'    => true,
+		'placeholder' => '20000',
+		'custom_attributes' => array(
+			'step' => '1',
+			'min'  => '0',
+		),
+	);
+
+	// Add discount percentage field
+	$settings[] = array(
+		'title'       => __( 'Discount Percentage (%)', 'woocommerce' ),
+		'desc'        => __( 'Percentage discount to apply when threshold is met. Enter number only (e.g., 20 for 20%).', 'woocommerce' ),
+		'id'          => 'wc_auto_discount_percentage',
+		'type'        => 'number',
+		'default'     => '20',
+		'desc_tip'    => true,
+		'placeholder' => '20',
+		'custom_attributes' => array(
+			'step' => '0.1',
+			'min'  => '0',
+			'max'  => '100',
+		),
+	);
+
+	// Add section end
+	$settings[] = array(
+		'type' => 'sectionend',
+		'id'   => 'automatic_discount_options',
+	);
+
+	return $settings;
+}
+// Hook into WooCommerce products settings filter
+// Priority 10 ensures it runs at the standard time
+// Accepts 1 parameter: settings array
+add_filter( 'woocommerce_get_settings_products', 'woocommerce_theme_add_discount_settings_fields', 10, 1 );
+
+/**
+ * Admin: Sanitize and Validate Automatic Discount Settings
+ *
+ * This function validates and sanitizes the discount settings when they
+ * are saved in the admin. It ensures values are numeric and within
+ * acceptable ranges.
+ *
+ * Hook: woocommerce_admin_settings_sanitize_option
+ * This filter allows us to sanitize settings before they are saved.
+ *
+ * @param mixed  $value The setting value being saved.
+ * @param string $option The option name being saved.
+ * @param mixed  $raw_value The raw value before sanitization.
+ * @return mixed Sanitized value.
+ */
+function woocommerce_theme_sanitize_discount_settings( $value, $option, $raw_value ) {
+	// Sanitize discount threshold
+	if ( 'wc_auto_discount_threshold' === $option ) {
+		// Convert to float, then to int (ensures numeric value)
+		$value = absint( floatval( $raw_value ) );
+		// Ensure value is not negative
+		if ( $value < 0 ) {
+			$value = 20000; // Default fallback
+		}
+	}
+
+	// Sanitize discount percentage
+	if ( 'wc_auto_discount_percentage' === $option ) {
+		// Convert to float
+		$value = floatval( $raw_value );
+		// Ensure value is between 0 and 100
+		if ( $value < 0 ) {
+			$value = 20; // Default fallback
+		} elseif ( $value > 100 ) {
+			$value = 100; // Maximum is 100%
+		}
+	}
+
+	return $value;
+}
+// Hook into WooCommerce admin settings sanitize option filter
+// Priority 10 ensures it runs at the standard time
+// Accepts 3 parameters: value, option name, raw value
+add_filter( 'woocommerce_admin_settings_sanitize_option', 'woocommerce_theme_sanitize_discount_settings', 10, 3 );
 
 /**
  * Custom Shipping Method: Country-Based Shipping Rates
