@@ -1336,6 +1336,79 @@ function woocommerce_theme_validate_vat_number_conditionally() {
 add_action( 'woocommerce_checkout_process', 'woocommerce_theme_validate_vat_number_conditionally' );
 
 /**
+ * Checkout: Conditionally Show/Hide VAT Number Field Based on Business Type
+ *
+ * This function adds JavaScript to the checkout page to:
+ * - Hide VAT Number field initially (when no business type is selected)
+ * - Show VAT Number field only when Business Type = "Company"
+ * - Hide VAT Number field when Business Type = "Individual" or empty
+ * - Handle business type change events to toggle field visibility
+ *
+ * Hook: wp_footer
+ * This hook fires in the footer, allowing us to output JavaScript after all other content.
+ *
+ * The JavaScript:
+ * - Monitors changes to the billing_business_type dropdown
+ * - Shows VAT Number field when Business Type = "Company"
+ * - Hides VAT Number field when Business Type = "Individual" or empty
+ * - Works with WooCommerce's checkout update mechanism
+ *
+ * @return void
+ */
+function woocommerce_theme_checkout_conditional_vat_visibility_by_business_type() {
+	// Only run on checkout page
+	if ( ! function_exists( 'is_checkout' ) || ! is_checkout() ) {
+		return;
+	}
+
+	?>
+	<script type="text/javascript">
+	(function($) {
+		'use strict';
+
+		// Function to toggle VAT Number field visibility based on business type selection
+		function toggleVatNumberVisibilityByBusinessType() {
+			var $businessTypeField = $('#billing_business_type');
+			var $vatFieldWrapper = $('#billing_vat_number_field');
+
+			// Check if fields exist
+			if (!$businessTypeField.length || !$vatFieldWrapper.length) {
+				return;
+			}
+
+			var selectedBusinessType = $businessTypeField.val();
+
+			// Show VAT Number field if Business Type = "company", hide otherwise
+			if (selectedBusinessType === 'company') {
+				$vatFieldWrapper.show();
+			} else {
+				$vatFieldWrapper.hide();
+				// Clear VAT number value when hiding to avoid confusion
+				$vatFieldWrapper.find('input').val('');
+			}
+		}
+
+		// Initialize visibility on page load
+		$(document).ready(function() {
+			toggleVatNumberVisibilityByBusinessType();
+
+			// Handle business type field change event
+			$('body').on('change', '#billing_business_type', function() {
+				toggleVatNumberVisibilityByBusinessType();
+			});
+
+			// Also handle WooCommerce checkout update trigger
+			$('body').on('updated_checkout', function() {
+				toggleVatNumberVisibilityByBusinessType();
+			});
+		});
+	})(jQuery);
+	</script>
+	<?php
+}
+add_action( 'wp_footer', 'woocommerce_theme_checkout_conditional_vat_visibility_by_business_type' );
+
+/**
  * Checkout: Show product image in \"Your order\" section
  *
  * Uses woocommerce_cart_item_name to prepend the product thumbnail
