@@ -407,10 +407,10 @@ add_action( 'woocommerce_after_main_content', 'woocommerce_theme_wrapper_end', 1
 
 
 /**
- * Shop Page Poster / Hero Banner
+ * Shop Page Hero Banner (Video)
  *
- * Outputs a full-width poster-style banner with image at the top of the main shop page.
- * The image path can be customized by changing the $poster_image_url variable below.
+ * Outputs a full-width hero banner with a looping video at the top of the main shop page.
+ * The media paths can be customized by changing the variables below.
  */
 function woocommerce_theme_shop_poster_banner() {
 	// Only show on the main shop page
@@ -418,19 +418,24 @@ function woocommerce_theme_shop_poster_banner() {
 		return;
 	}
 
-	// Customize the poster image URL here
-	// Replace with your image path: get_template_directory_uri() . '/assets/images/shop-poster.jpg'
-	// Or use an external URL: 'https://example.com/image.jpg'
-	$poster_image_url = get_template_directory_uri() . '/assets/images/shop-poster.jpg';
+	// Customize hero media here
+	$hero_video_url   = get_template_directory_uri() . '/assets/images/HB1.mp4';
 
 	?>
 	<section class="shop-hero-banner" aria-label="<?php esc_attr_e( 'Shop highlight', 'woocommerce' ); ?>">
-		<div class="shop-hero-banner__image-wrapper">
-			<img 
-				src="<?php echo esc_url( $poster_image_url ); ?>" 
-				alt="<?php esc_attr_e( 'Shop banner', 'woocommerce' ); ?>" 
-				class="shop-hero-banner__image"
-			/>
+		<div class="shop-hero-banner__media">
+			<video
+				class="shop-hero-banner__video"
+				autoplay
+				muted
+				loop
+				playsinline
+				poster="<?php echo esc_url( $poster_image_url ); ?>"
+				aria-label="<?php esc_attr_e( 'Shop hero video', 'woocommerce' ); ?>"
+			>
+				<source src="<?php echo esc_url( $hero_video_url ); ?>" type="video/mp4" />
+				<?php esc_html_e( 'Your browser does not support the video tag.', 'woocommerce' ); ?>
+			</video>
 		</div>
 	</section>
 	<?php
