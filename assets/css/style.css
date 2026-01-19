@@ -54,6 +54,23 @@ body {
 	background-color: #fff; /* White background for clean, professional appearance */
 }
 
+/* Prevent horizontal scroll on single product pages (common with absolute/100vw elements) */
+body.single-product {
+	overflow-x: hidden;
+}
+
+/* Keep original variation <select> for accessibility / WooCommerce JS but hide visually */
+.wc-variation-select--hidden {
+	position: absolute !important;
+	width: 1px !important;
+	height: 1px !important;
+	padding: 0 !important;
+	margin: -1px !important;
+	overflow: hidden !important;
+	clip: rect(0 0 0 0) !important;
+	border: 0 !important;
+}
+
 /* ==========================================================================
    Layout
    ========================================================================== */
@@ -2602,6 +2619,154 @@ body #secondary {
 .woocommerce div.product table.variations .reset_variations:hover {
 	background: #f5f5f5;
 	border-color: #bbb;
+}
+
+/**
+ * Size attribute as circular label buttons (e.g., UK 10, UK 12, ...)
+ * Built on top of the standard variations table without removing it.
+ */
+.wc-size-labels {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.5rem;
+	margin-top: 0.25rem;
+}
+
+.wc-size-labels__item {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-width: 2.75rem;
+	height: 2.75rem;
+	padding: 0 0.75rem;
+	border-radius: 999px;
+	border: 2px solid #333;
+	background-color: #fff;
+	color: #333;
+	font-size: 0.8rem;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.03em;
+	cursor: pointer;
+	transition: all 0.15s ease;
+}
+
+.wc-size-labels__item:hover,
+.wc-size-labels__item:focus-visible {
+	border-color: #7b35a8;
+	color: #7b35a8;
+	outline: none;
+}
+
+.wc-size-labels__item.is-selected {
+	background-color: #7b35a8;
+	border-color: #7b35a8;
+	color: #fff;
+}
+
+.wc-size-labels__item.is-disabled {
+	border-color: #ccc;
+	color: #ccc;
+	cursor: not-allowed;
+	position: relative;
+}
+
+.wc-size-labels__item.is-disabled::before,
+.wc-size-labels__item.is-disabled::after {
+	content: "";
+	position: absolute;
+	left: 50%;
+	top: 50%;
+	width: 120%;
+	height: 2px;
+	background-color: #b395cc;
+	transform-origin: center;
+}
+
+.wc-size-labels__item.is-disabled::before {
+	transform: translate(-50%, -50%) rotate(45deg);
+}
+
+.wc-size-labels__item.is-disabled::after {
+	transform: translate(-50%, -50%) rotate(-45deg);
+}
+
+/* Keep original <select> for accessibility / WooCommerce JS but hide visually */
+.wc-size-labels__select--hidden {
+	position: absolute !important;
+	width: 1px !important;
+	height: 1px !important;
+	padding: 0 !important;
+	margin: -1px !important;
+	overflow: hidden !important;
+	clip: rect(0 0 0 0) !important;
+	border: 0 !important;
+}
+
+/**
+ * Color attribute as round color swatches
+ * (e.g., Red -> red circle)
+ */
+.wc-color-swatches {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.5rem;
+	margin-top: 0.25rem;
+}
+
+.wc-color-swatches__item {
+	position: relative;
+	width: 2.75rem;
+	height: 2.75rem;
+	border-radius: 50%;
+	border: 2px solid #333;
+	background-color: transparent;
+	cursor: pointer;
+	padding: 0;
+	transition: all 0.15s ease;
+}
+
+.wc-color-swatches__circle {
+	position: absolute;
+	inset: 4px;
+	border-radius: 50%;
+	background-color: #ccc; /* overwritten inline by JS */
+}
+
+.wc-color-swatches__item:hover,
+.wc-color-swatches__item:focus-visible {
+	border-color: #7b35a8;
+	outline: none;
+}
+
+.wc-color-swatches__item.is-selected {
+	border-color: #7b35a8;
+	box-shadow: 0 0 0 2px rgba(123, 53, 168, 0.25);
+}
+
+.wc-color-swatches__item.is-disabled {
+	border-color: #ccc;
+	cursor: not-allowed;
+}
+
+.wc-color-swatches__item.is-disabled::before,
+.wc-color-swatches__item.is-disabled::after {
+	content: "";
+	position: absolute;
+	left: 50%;
+	top: 50%;
+	width: 120%;
+	height: 2px;
+	background-color: rgba(179, 149, 204, 0.9);
+	transform-origin: center;
+}
+
+.wc-color-swatches__item.is-disabled::before {
+	transform: translate(-50%, -50%) rotate(45deg);
+}
+
+.wc-color-swatches__item.is-disabled::after {
+	transform: translate(-50%, -50%) rotate(-45deg);
 }
 
 /**

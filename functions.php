@@ -215,6 +215,23 @@ function woocommerce_theme_enqueue_assets() {
 		$theme_version,                                 // Version (for cache busting)
 		true                                            // Load in footer (better performance)
 	);
+
+	/**
+	 * Enqueue Size Labels Enhancer for Variable Products
+	 *
+	 * Transforms the size attribute dropdown on single product pages into
+	 * clickable label buttons (for attributes like pa_size), without
+	 * removing the original <select> element.
+	 */
+	if ( function_exists( 'is_product' ) && is_product() ) {
+		wp_enqueue_script(
+			'woocommerce-variation-size-labels',
+			get_template_directory_uri() . '/assets/js/variation-size-labels.js',
+			array( 'jquery' ),
+			$theme_version,
+			true
+		);
+	}
 }
 /**
  * Hook Registration: wp_enqueue_scripts
