@@ -215,6 +215,17 @@ function woocommerce_theme_enqueue_assets() {
 		$theme_version,                                 // Version (for cache busting)
 		true                                            // Load in footer (better performance)
 	);
+
+	// Shop hero slider (only on main shop page)
+	if ( function_exists( 'is_shop' ) && is_shop() ) {
+		wp_enqueue_script(
+			'woocommerce-shop-slider',
+			get_template_directory_uri() . '/assets/js/shop-slider.js',
+			array(), // Vanilla JS, no dependencies
+			$theme_version,
+			true
+		);
+	}
 }
 /**
  * Hook Registration: wp_enqueue_scripts
@@ -418,19 +429,80 @@ function woocommerce_theme_shop_poster_banner() {
 		return;
 	}
 
-	// Customize the poster image URL here
-	// Replace with your image path: get_template_directory_uri() . '/assets/images/shop-poster.jpg'
-	// Or use an external URL: 'https://example.com/image.jpg'
-	$poster_image_url = get_template_directory_uri() . '/assets/images/shop-poster.jpg';
+	$default_link = function_exists( 'wc_get_page_permalink' ) ? wc_get_page_permalink( 'shop' ) : home_url( '/shop' );
+
+	// Define slides (update image paths as needed in assets/images/)
+	$slides = array(
+		array(
+			'image'    => get_template_directory_uri() . '/assets/images/shop-slide-1.jpg',
+			'title'    => __( 'New Arrivals', 'woocommerce' ),
+			'subtitle' => __( 'Fresh drops curated for you', 'woocommerce' ),
+			'cta_text' => __( 'Shop now', 'woocommerce' ),
+			'cta_url'  => $default_link,
+		),
+		array(
+			'image'    => get_template_directory_uri() . '/assets/images/shop-slide-1.jpg',
+			'title'    => __( 'Essential Collections', 'woocommerce' ),
+			'subtitle' => __( 'Everyday favorites with premium quality', 'woocommerce' ),
+			'cta_text' => __( 'Explore collection', 'woocommerce' ),
+			'cta_url'  => $default_link,
+		),
+		array(
+			'image'    => get_template_directory_uri() . '/assets/images/shop-slide-1.jpg',
+			'title'    => __( 'Limited Offers', 'woocommerce' ),
+			'subtitle' => __( 'Seasonal picks with special pricing', 'woocommerce' ),
+			'cta_text' => __( 'View offers', 'woocommerce' ),
+			'cta_url'  => $default_link,
+		),
+	);
 
 	?>
-	<section class="shop-hero-banner" aria-label="<?php esc_attr_e( 'Shop highlight', 'woocommerce' ); ?>">
-		<div class="shop-hero-banner__image-wrapper">
-			<img 
-				src="<?php echo esc_url( $poster_image_url ); ?>" 
-				alt="<?php esc_attr_e( 'Shop banner', 'woocommerce' ); ?>" 
-				class="shop-hero-banner__image"
-			/>
+	<section class="shop-hero-slider" aria-label="<?php esc_attr_e( 'Shop highlights', 'woocommerce' ); ?>">
+		<div class="shop-hero-slider__track" data-slider-track>
+			<?php foreach ( $slides as $index => $slide ) : ?>
+				<article class="shop-hero-slide<?php echo 0 === $index ? ' is-active' : ''; ?>" data-slide-index="<?php echo esc_attr( $index ); ?>">
+					<img
+						src="<?php echo esc_url( $slide['image'] ); ?>"
+						alt="<?php echo esc_attr( $slide['title'] ); ?>"
+						class="shop-hero-slide__image"
+						loading="lazy"
+					/>
+					<div class="shop-hero-slide__overlay">
+						<div class="shop-hero-slide__content">
+							<?php if ( ! empty( $slide['title'] ) ) : ?>
+								<h2 class="shop-hero-slide__title"><?php echo esc_html( $slide['title'] ); ?></h2>
+							<?php endif; ?>
+							<?php if ( ! empty( $slide['subtitle'] ) ) : ?>
+								<p class="shop-hero-slide__subtitle"><?php echo esc_html( $slide['subtitle'] ); ?></p>
+							<?php endif; ?>
+							<?php if ( ! empty( $slide['cta_url'] ) && ! empty( $slide['cta_text'] ) ) : ?>
+								<a class="shop-hero-slide__cta button" href="<?php echo esc_url( $slide['cta_url'] ); ?>">
+									<?php echo esc_html( $slide['cta_text'] ); ?>
+								</a>
+							<?php endif; ?>
+						</div>
+					</div>
+				</article>
+			<?php endforeach; ?>
+		</div>
+
+		<button class="shop-hero-slider__nav shop-hero-slider__nav--prev" type="button" aria-label="<?php esc_attr_e( 'Previous slide', 'woocommerce' ); ?>" data-slider-prev>
+			<span class="shop-hero-slider__nav-icon" aria-hidden="true">‹</span>
+		</button>
+		<button class="shop-hero-slider__nav shop-hero-slider__nav--next" type="button" aria-label="<?php esc_attr_e( 'Next slide', 'woocommerce' ); ?>" data-slider-next>
+			<span class="shop-hero-slider__nav-icon" aria-hidden="true">›</span>
+		</button>
+
+		<div class="shop-hero-slider__dots" role="tablist" aria-label="<?php esc_attr_e( 'Shop highlights navigation', 'woocommerce' ); ?>" data-slider-dots>
+			<?php foreach ( $slides as $index => $slide ) : ?>
+				<button
+					type="button"
+					class="shop-hero-slider__dot<?php echo 0 === $index ? ' is-active' : ''; ?>"
+					data-slider-dot="<?php echo esc_attr( $index ); ?>"
+					aria-label="<?php printf( esc_attr__( 'Go to slide %d', 'woocommerce' ), $index + 1 ); ?>"
+					<?php echo 0 === $index ? 'aria-current="true"' : ''; ?>
+				></button>
+			<?php endforeach; ?>
 		</div>
 	</section>
 	<?php
