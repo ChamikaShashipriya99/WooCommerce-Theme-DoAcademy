@@ -201,6 +201,20 @@ function woocommerce_theme_enqueue_assets() {
 		$theme_version,                                 // Version (for cache busting)
 		true                                            // Load in footer (better performance)
 	);
+
+	/**
+	 * Enqueue Quantity Changer JavaScript
+	 * 
+	 * Adds modern plus/minus buttons to WooCommerce quantity inputs on product pages.
+	 * Creates a better user experience for changing product quantities.
+	 */
+	wp_enqueue_script(
+		'woocommerce-quantity-changer',                 // Handle (unique identifier)
+		get_template_directory_uri() . '/assets/js/quantity-changer.js', // Path to JavaScript file
+		array( 'jquery' ),                               // Dependencies (jQuery is required)
+		$theme_version,                                 // Version (for cache busting)
+		true                                            // Load in footer (better performance)
+	);
 }
 /**
  * Hook Registration: wp_enqueue_scripts
