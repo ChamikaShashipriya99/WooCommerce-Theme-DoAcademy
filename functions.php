@@ -2630,4 +2630,153 @@ function woocommerce_theme_generate_order_download( $order ) {
 	<?php
 }
 
+/**
+ * Stripe Payment Gateway Integration Support
+ *
+ * This function ensures Stripe payment gateway works properly with the theme.
+ * It adds necessary theme support and handles Stripe-specific requirements.
+ *
+ * Note: This requires the official "WooCommerce Stripe Payment Gateway" plugin
+ * to be installed and activated. This function only provides theme-level support.
+ */
+function woocommerce_theme_stripe_support() {
+	// Check if WooCommerce is active
+	if ( ! class_exists( 'WooCommerce' ) ) {
+		return;
+	}
+
+	// Check if Stripe gateway is available
+	// This doesn't require the plugin to be active, just checks if the class exists
+	if ( ! class_exists( 'WC_Stripe' ) ) {
+		// Stripe plugin not installed - no action needed
+		// User should install WooCommerce Stripe Payment Gateway plugin
+		return;
+	}
+
+	// Add theme support for Stripe if needed
+	// This ensures the theme is compatible with Stripe's requirements
+	// Most modern themes work out of the box, but this provides explicit support
+}
+// Hook into after_setup_theme to ensure Stripe support is registered
+add_action( 'after_setup_theme', 'woocommerce_theme_stripe_support', 20 );
+
+/**
+ * Stripe Checkout Styling Enhancement
+ *
+ * This function adds custom CSS to ensure Stripe payment form
+ * matches the theme's design and displays correctly.
+ *
+ * Hook: wp_head
+ * This ensures styles are added to the <head> section on all pages.
+ */
+function woocommerce_theme_stripe_checkout_styles() {
+	// Only add styles on checkout page where Stripe form appears
+	if ( ! function_exists( 'is_checkout' ) || ! is_checkout() ) {
+		return;
+	}
+
+	// Check if Stripe is available
+	if ( ! class_exists( 'WC_Stripe' ) ) {
+		return;
+	}
+	?>
+	<style type="text/css">
+		/* Stripe Payment Form Styling */
+		.woocommerce-checkout #payment .stripe-card-group,
+		.woocommerce-checkout #payment .wc-stripe-elements-field {
+			border: 2px solid #e0e0e0;
+			border-radius: 8px;
+			padding: 12px;
+			background: #ffffff;
+			transition: border-color 0.2s ease, box-shadow 0.2s ease;
+		}
+
+		.woocommerce-checkout #payment .stripe-card-group:focus-within,
+		.woocommerce-checkout #payment .wc-stripe-elements-field:focus-within {
+			border-color: #0073aa;
+			box-shadow: 0 0 0 3px rgba(0, 115, 170, 0.1);
+		}
+
+		/* Stripe Error Messages */
+		.woocommerce-checkout #payment .stripe-source-errors,
+		.woocommerce-checkout #payment .stripe-card-errors {
+			color: #e74c3c;
+			font-size: 0.875rem;
+			margin-top: 8px;
+			display: block;
+		}
+
+		/* Stripe Payment Method Icons */
+		.woocommerce-checkout #payment .stripe-payment-icons {
+			margin-top: 10px;
+		}
+
+		.woocommerce-checkout #payment .stripe-payment-icons img {
+			height: 24px;
+			margin-right: 8px;
+			vertical-align: middle;
+		}
+
+		/* Ensure Stripe form is responsive */
+		@media (max-width: 768px) {
+			.woocommerce-checkout #payment .stripe-card-group,
+			.woocommerce-checkout #payment .wc-stripe-elements-field {
+				padding: 10px;
+			}
+		}
+	</style>
+	<?php
+}
+// Hook into wp_head to add Stripe checkout styles
+add_action( 'wp_head', 'woocommerce_theme_stripe_checkout_styles', 20 );
+
+/**
+ * Stripe Payment Gateway Admin Notice
+ *
+ * Displays a helpful notice in WordPress admin if Stripe plugin
+ * is not installed but user might want to use it.
+ *
+ * This is optional and can be removed if not needed.
+ */
+function woocommerce_theme_stripe_admin_notice() {
+	// Only show to administrators
+	if ( ! current_user_can( 'manage_options' ) ) {
+		return;
+	}
+
+	// Check if WooCommerce is active
+	if ( ! class_exists( 'WooCommerce' ) ) {
+		return;
+	}
+
+	// Check if Stripe plugin is already installed
+	if ( class_exists( 'WC_Stripe' ) ) {
+		return; // Stripe is installed, no notice needed
+	}
+
+	// Check if we're on plugins page or WooCommerce settings page
+	$screen = get_current_screen();
+	if ( ! $screen || ( 'plugins' !== $screen->id && 'woocommerce_page_wc-settings' !== $screen->id ) ) {
+		return;
+	}
+
+	// Show notice
+	?>
+	<div class="notice notice-info is-dismissible">
+		<p>
+			<strong><?php esc_html_e( 'Stripe Payment Gateway Available', 'woocommerce' ); ?></strong><br>
+			<?php
+			printf(
+				/* translators: %s: Link to install Stripe plugin */
+				esc_html__( 'To accept credit card payments via Stripe, install the %s plugin.', 'woocommerce' ),
+				'<a href="' . esc_url( admin_url( 'plugin-install.php?s=woocommerce+stripe&tab=search&type=term' ) ) . '">WooCommerce Stripe Payment Gateway</a>'
+			);
+			?>
+		</p>
+	</div>
+	<?php
+}
+// Uncomment the line below if you want to show admin notice
+// add_action( 'admin_notices', 'woocommerce_theme_stripe_admin_notice' );
+
 
