@@ -840,212 +840,142 @@ article:last-child {
 }
 
 /* ==========================================================================
-   Shop Page Hero Slider
+   Shop Page Hero Banner / Poster
    ========================================================================== */
 
-.shop-hero-slider {
+/**
+ * Shop Hero Banner Container
+ * Full-width banner at the top of the shop page with image and overlay content
+ */
+.shop-hero-banner {
 	position: relative;
 	width: 100%;
 	margin-bottom: 2rem;
-	border-radius: 14px;
+	border-radius: 8px;
 	overflow: hidden;
-	background: #0f172a;
-	box-shadow: 0 14px 40px rgba(15, 23, 42, 0.18);
-}
-
-.shop-hero-slider__track {
+	min-height: 300px;
 	display: flex;
-	width: 100%;
-	transition: transform 420ms ease;
-	will-change: transform;
-}
-
-.shop-hero-slide {
-	position: relative;
-	flex: 0 0 100%;
-	min-height: 340px;
-	display: flex;
-	align-items: stretch;
+	align-items: center;
 	justify-content: center;
-	overflow: hidden;
 }
 
-.shop-hero-slide__image {
+/**
+ * Image Wrapper
+ * Contains the poster image
+ */
+.shop-hero-banner__image-wrapper {
 	position: absolute;
-	inset: 0;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	z-index: 1;
+}
+
+.shop-hero-banner__image {
 	width: 100%;
 	height: 100%;
 	object-fit: cover;
-	transform: scale(1.02);
-	transition: transform 1s ease;
+	display: block;
 }
 
-.shop-hero-slide.is-active .shop-hero-slide__image {
-	transform: scale(1);
-}
-
-.shop-hero-slide__overlay {
-	position: absolute;
-	inset: 0;
-	background: linear-gradient(110deg, rgba(15, 23, 42, 0.65) 0%, rgba(15, 23, 42, 0.35) 45%, rgba(15, 23, 42, 0.05) 100%);
-}
-
-.shop-hero-slide__content {
+/**
+ * Inner Content Container
+ * Overlay container for text content on top of the image
+ */
+.shop-hero-banner__inner {
 	position: relative;
 	z-index: 2;
-	padding: clamp(24px, 3vw, 48px);
-	max-width: 520px;
+	width: 100%;
+	max-width: 1920px;
+	margin: 0 auto;
+	padding: 2rem 1rem;
 	display: flex;
-	flex-direction: column;
-	gap: 14px;
-	color: #f8fafc;
-	text-align: left;
-}
-
-.shop-hero-slide__title {
-	font-size: clamp(1.8rem, 3vw, 2.6rem);
-	font-weight: 800;
-	line-height: 1.2;
-	letter-spacing: -0.02em;
-	margin: 0;
-	color: #ffffff;
-	text-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
-}
-
-.shop-hero-slide__subtitle {
-	margin: 0;
-	font-size: 1.05rem;
-	line-height: 1.7;
-	color: rgba(248, 250, 252, 0.9);
-	max-width: 44ch;
-}
-
-.shop-hero-slide__cta.button {
-	display: inline-flex;
-	align-items: center;
-	gap: 10px;
-	align-self: flex-start;
-	padding: 0.95rem 1.6rem;
-	border-radius: 12px;
-	background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
-	color: #0b1727;
-	font-weight: 800;
-	border: 0;
-	box-shadow: 0 14px 30px rgba(34, 197, 94, 0.28);
-	transition: transform 140ms ease, box-shadow 140ms ease, filter 140ms ease;
-	text-transform: none;
-	width: auto;
-	min-width: 0;
-}
-
-.shop-hero-slide__cta.button:hover {
-	transform: translateY(-1px);
-	box-shadow: 0 18px 40px rgba(34, 197, 94, 0.34);
-	filter: brightness(0.98);
-}
-
-.shop-hero-slide__cta.button:active {
-	transform: translateY(0);
-}
-
-.shop-hero-slider__nav {
-	position: absolute;
-	top: 50%;
-	transform: translateY(-50%);
-	height: 48px;
-	width: 48px;
-	border-radius: 50%;
-	border: 1px solid rgba(255, 255, 255, 0.35);
-	background: rgba(15, 23, 42, 0.55);
-	color: #fff;
-	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	cursor: pointer;
-	backdrop-filter: blur(6px);
-	-webkit-backdrop-filter: blur(6px);
-	box-shadow: 0 14px 30px rgba(0, 0, 0, 0.25);
-	transition: transform 140ms ease, background-color 140ms ease, border-color 140ms ease;
-	z-index: 3;
 }
 
-.shop-hero-slider__nav:hover {
-	transform: translateY(-50%) scale(1.04);
-	background: rgba(15, 23, 42, 0.75);
-	border-color: rgba(255, 255, 255, 0.55);
+/**
+ * Content Box
+ * Contains title and subtitle with semi-transparent background
+ */
+.shop-hero-banner__content {
+	text-align: center;
+	background: rgba(255, 255, 255, 0.95);
+	padding: 2rem 2.5rem;
+	border-radius: 8px;
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+	max-width: 800px;
 }
 
-.shop-hero-slider__nav:active {
-	transform: translateY(-50%) scale(0.98);
+/**
+ * Banner Title
+ */
+.shop-hero-banner__title {
+	font-size: 2.5rem;
+	font-weight: 700;
+	color: #333;
+	margin: 0 0 1rem 0;
+	line-height: 1.2;
 }
 
-.shop-hero-slider__nav--prev {
-	left: 14px;
+/**
+ * Banner Subtitle
+ */
+.shop-hero-banner__subtitle {
+	font-size: 1.125rem;
+	color: #666;
+	margin: 0;
+	line-height: 1.6;
 }
 
-.shop-hero-slider__nav--next {
-	right: 14px;
-}
-
-.shop-hero-slider__nav-icon {
-	font-size: 1.35rem;
-	line-height: 1;
-}
-
-.shop-hero-slider__dots {
-	position: absolute;
-	left: 50%;
-	bottom: 18px;
-	transform: translateX(-50%);
-	display: inline-flex;
-	gap: 8px;
-	z-index: 3;
-	padding: 6px 10px;
-	border-radius: 999px;
-	background: rgba(15, 23, 42, 0.55);
-	backdrop-filter: blur(6px);
-	-webkit-backdrop-filter: blur(6px);
-}
-
-.shop-hero-slider__dot {
-	width: 10px;
-	height: 10px;
-	border-radius: 50%;
-	border: 1px solid rgba(255, 255, 255, 0.55);
-	background: transparent;
-	cursor: pointer;
-	transition: background-color 140ms ease, transform 140ms ease, border-color 140ms ease;
-}
-
-.shop-hero-slider__dot.is-active {
-	background: #22c55e;
-	border-color: #22c55e;
-	transform: scale(1.08);
-}
-
+/**
+ * Responsive Styles for Shop Hero Banner
+ */
 @media (max-width: 767px) {
-	.shop-hero-slide {
-		min-height: 280px;
+	.shop-hero-banner {
+		min-height: 250px;
+		margin-bottom: 1.5rem;
 	}
 
-	.shop-hero-slide__content {
-		max-width: 100%;
-		padding: 22px 18px;
+	.shop-hero-banner__inner {
+		padding: 1.5rem 1rem;
 	}
 
-	.shop-hero-slide__subtitle {
-		font-size: 0.98rem;
+	.shop-hero-banner__content {
+		padding: 1.5rem 1.5rem;
 	}
 
-	.shop-hero-slider__nav {
-		height: 42px;
-		width: 42px;
+	.shop-hero-banner__title {
+		font-size: 1.75rem;
+		margin-bottom: 0.75rem;
 	}
 
-	.shop-hero-slider__dots {
-		bottom: 12px;
+	.shop-hero-banner__subtitle {
+		font-size: 1rem;
 	}
 }
+
+@media (min-width: 768px) and (max-width: 1199px) {
+	.shop-hero-banner {
+		min-height: 350px;
+	}
+
+	.shop-hero-banner__title {
+		font-size: 2.25rem;
+	}
+}
+
+@media (min-width: 1200px) {
+	.shop-hero-banner {
+		min-height: 400px;
+	}
+
+	.shop-hero-banner__title {
+		font-size: 3rem;
+	}
+}
+
 
 /* ==========================================================================
    Buttons
@@ -2530,7 +2460,6 @@ body #secondary {
 	background: transparent;
 	color: #1a1a1a;
 	-moz-appearance: textfield;
-	appearance: textfield;
 	transition: none;
 }
 
