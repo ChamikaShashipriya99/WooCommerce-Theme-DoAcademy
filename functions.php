@@ -901,20 +901,23 @@ function woocommerce_theme_sanitize_discount_settings( $value, $option, $raw_val
 add_filter( 'woocommerce_admin_settings_sanitize_option', 'woocommerce_theme_sanitize_discount_settings', 10, 3 );
 
 /**
- * Custom Shipping Method: Country-Based Shipping Rates
+ * Custom Shipping Method: Location-Based Shipping Rates
  *
  * This class creates a custom WooCommerce shipping method that calculates
- * shipping rates dynamically based on the customer's country.
+ * shipping rates dynamically based on the customer's location using a three-tier system:
+ * - Tier 1: Sri Lanka → LKR 500 (default)
+ * - Tier 2: Asia (excluding Sri Lanka) → LKR 1,500 (default)
+ * - Tier 3: Other countries → LKR 3,000 (default)
  *
  * Class Structure:
  * - Extends WC_Shipping_Method (WooCommerce base shipping class)
  * - Implements calculate_shipping() for dynamic rate calculation
- * - Provides admin settings for configuring country-specific rates
+ * - Provides admin settings for configuring location-based rates
  * - Integrates seamlessly with WooCommerce shipping zones
  *
  * Usage:
  * 1. Enable in WooCommerce > Settings > Shipping
- * 2. Configure rates per country in shipping method settings
+ * 2. Configure rates for each tier in shipping method settings
  * 3. Rates automatically apply based on customer's shipping country
  */
 if ( ! class_exists( 'WC_Theme_Custom_Shipping_Method' ) ) {
@@ -939,11 +942,11 @@ if ( ! class_exists( 'WC_Theme_Custom_Shipping_Method' ) ) {
 
 			// Set shipping method title (displayed to customers)
 			// This appears in checkout as the shipping option name
-			$this->method_title = __( 'Custom Country Shipping', 'woocommerce' );
+			$this->method_title = __( 'Location-Based Shipping', 'woocommerce' );
 
 			// Set shipping method description (shown in admin)
 			// This helps admins understand what the shipping method does
-			$this->method_description = __( 'Custom shipping method with country-based rates. Configure rates for different countries in the settings below.', 'woocommerce' );
+			$this->method_description = __( 'Location-based shipping method with three-tier rates: Sri Lanka, Asia (excluding LK), and Other countries. Configure rates for each tier in the settings below.', 'woocommerce' );
 
 			// Enable admin settings panel
 			// This allows admins to configure shipping rates in WooCommerce settings
@@ -997,25 +1000,25 @@ if ( ! class_exists( 'WC_Theme_Custom_Shipping_Method' ) ) {
 					'default'     => __( 'Custom Shipping', 'woocommerce' ),
 					'desc_tip'    => true,
 				),
-				'local_rate' => array(
-					'title'       => __( 'Local Rate (LKR)', 'woocommerce' ),
+				'sri_lanka_rate' => array(
+					'title'       => __( 'Sri Lanka Rate (LKR)', 'woocommerce' ),
 					'type'        => 'text',
-					'description' => __( 'Shipping rate for local deliveries (e.g., Sri Lanka). Enter amount without currency symbol.', 'woocommerce' ),
+					'description' => __( 'Shipping rate for Sri Lanka. Enter amount without currency symbol.', 'woocommerce' ),
 					'default'     => '500',
 					'desc_tip'    => true,
 				),
-				'international_rate' => array(
-					'title'       => __( 'International Rate (LKR)', 'woocommerce' ),
+				'asia_rate' => array(
+					'title'       => __( 'Asia Rate (LKR)', 'woocommerce' ),
 					'type'        => 'text',
-					'description' => __( 'Shipping rate for international deliveries. Enter amount without currency symbol.', 'woocommerce' ),
-					'default'     => '2000',
+					'description' => __( 'Shipping rate for Asian countries (excluding Sri Lanka). Enter amount without currency symbol.', 'woocommerce' ),
+					'default'     => '1500',
 					'desc_tip'    => true,
 				),
-				'local_countries' => array(
-					'title'       => __( 'Local Countries', 'woocommerce' ),
-					'type'        => 'textarea',
-					'description' => __( 'Enter country codes (one per line) that should use local rates. Leave empty to use default local country. Example: LK, IN, BD', 'woocommerce' ),
-					'default'     => 'LK',
+				'other_countries_rate' => array(
+					'title'       => __( 'Other Countries Rate (LKR)', 'woocommerce' ),
+					'type'        => 'text',
+					'description' => __( 'Shipping rate for all other countries (non-Asian). Enter amount without currency symbol.', 'woocommerce' ),
+					'default'     => '3000',
 					'desc_tip'    => true,
 				),
 			);
@@ -1132,54 +1135,97 @@ if ( ! class_exists( 'WC_Theme_Custom_Shipping_Method' ) ) {
 
 			// Get configured rates from settings
 			// These are set by admin in WooCommerce > Settings > Shipping
-			$local_rate = isset( $this->settings['local_rate'] ) 
-				? floatval( $this->settings['local_rate'] ) 
-				: 500; // Default local rate
+			$sri_lanka_rate = isset( $this->settings['sri_lanka_rate'] ) 
+				? floatval( $this->settings['sri_lanka_rate'] ) 
+				: 500; // Default Sri Lanka rate
 
-			$international_rate = isset( $this->settings['international_rate'] ) 
-				? floatval( $this->settings['international_rate'] ) 
-				: 2000; // Default international rate
+			$asia_rate = isset( $this->settings['asia_rate'] ) 
+				? floatval( $this->settings['asia_rate'] ) 
+				: 1500; // Default Asia rate
 
-			// Get list of local countries from settings
-			// Admin can configure which countries use local rates
-			$local_countries_string = isset( $this->settings['local_countries'] ) 
-				? $this->settings['local_countries'] 
-				: 'LK'; // Default to Sri Lanka
+			$other_countries_rate = isset( $this->settings['other_countries_rate'] ) 
+				? floatval( $this->settings['other_countries_rate'] ) 
+				: 3000; // Default other countries rate
 
-			// Convert country list string to array
-			// Supports both comma-separated and newline-separated lists
-			$local_countries = array_map( 
-				'trim', 
-				preg_split( '/[,\n]/', $local_countries_string )
+			// Define Asian countries list (excluding Sri Lanka)
+			// ISO 3166-1 alpha-2 country codes for Asian countries
+			$asian_countries = array(
+				'AF', // Afghanistan
+				'AM', // Armenia
+				'AZ', // Azerbaijan
+				'BH', // Bahrain
+				'BD', // Bangladesh
+				'BT', // Bhutan
+				'BN', // Brunei
+				'KH', // Cambodia
+				'CN', // China
+				'GE', // Georgia
+				'HK', // Hong Kong
+				'IN', // India
+				'ID', // Indonesia
+				'IR', // Iran
+				'IQ', // Iraq
+				'IL', // Israel
+				'JP', // Japan
+				'JO', // Jordan
+				'KZ', // Kazakhstan
+				'KW', // Kuwait
+				'KG', // Kyrgyzstan
+				'LA', // Laos
+				'LB', // Lebanon
+				'MO', // Macau
+				'MY', // Malaysia
+				'MV', // Maldives
+				'MN', // Mongolia
+				'MM', // Myanmar
+				'NP', // Nepal
+				'KP', // North Korea
+				'OM', // Oman
+				'PK', // Pakistan
+				'PS', // Palestine
+				'PH', // Philippines
+				'QA', // Qatar
+				'SA', // Saudi Arabia
+				'SG', // Singapore
+				'KR', // South Korea
+				'SY', // Syria
+				'TW', // Taiwan
+				'TJ', // Tajikistan
+				'TH', // Thailand
+				'TL', // Timor-Leste
+				'TR', // Turkey
+				'TM', // Turkmenistan
+				'AE', // United Arab Emirates
+				'UZ', // Uzbekistan
+				'VN', // Vietnam
+				'YE', // Yemen
 			);
 
-			// Remove empty values from array
-			$local_countries = array_filter( $local_countries );
-
-			// If no local countries configured, use store's base country
-			if ( empty( $local_countries ) ) {
-				$local_countries = array( WC()->countries->get_base_country() );
-			}
+			// Normalize country code to uppercase for comparison
+			$destination_country_upper = strtoupper( $destination_country );
 
 			// Determine shipping rate based on customer's country
-			// Check if destination country is in the local countries list
-			$is_local = in_array( strtoupper( $destination_country ), array_map( 'strtoupper', $local_countries ), true );
-
-			// Select appropriate rate
-			// Local countries get local rate, all others get international rate
-			$shipping_cost = $is_local ? $local_rate : $international_rate;
-
-			// Get country name for display (optional, for better UX)
-			$countries = WC()->countries->get_countries();
-			$country_name = isset( $countries[ $destination_country ] ) 
-				? $countries[ $destination_country ] 
-				: $destination_country;
-
-			// Create rate label with country information
-			// This helps customers understand why they're seeing this rate
-			$rate_label = $is_local 
-				? sprintf( __( '%s (Local)', 'woocommerce' ), $this->title )
-				: sprintf( __( '%s (%s)', 'woocommerce' ), $this->title, $country_name );
+			// Tier 1: Sri Lanka (LK) → LKR 500
+			// Tier 2: Asia (excluding LK) → LKR 1,500
+			// Tier 3: Other countries → LKR 3,000
+			if ( $destination_country_upper === 'LK' ) {
+				// Sri Lanka
+				$shipping_cost = $sri_lanka_rate;
+				$rate_label = sprintf( __( '%s (Sri Lanka)', 'woocommerce' ), $this->title );
+			} elseif ( in_array( $destination_country_upper, $asian_countries, true ) ) {
+				// Asia excluding Sri Lanka
+				$shipping_cost = $asia_rate;
+				$rate_label = sprintf( __( '%s (Asia)', 'woocommerce' ), $this->title );
+			} else {
+				// Other countries
+				$shipping_cost = $other_countries_rate;
+				// Get country name for display
+				$countries = WC()->countries->get_countries();
+				$country_name = isset( $countries[ $destination_country ] ) 
+					? $countries[ $destination_country ] 
+					: $destination_country;
+				$rate_label = sprintf( __( '%s (%s)', 'woocommerce' ), $this->title, $country_name );
+			}
 
 			// Add shipping rate to WooCommerce
 			// This makes the rate available for customer selection at checkout
