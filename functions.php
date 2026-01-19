@@ -1738,6 +1738,73 @@ function woocommerce_display_product_origin_badge() {
 add_action( 'woocommerce_before_shop_loop_item_title', 'woocommerce_display_product_origin_badge', 3 );
 
 /**
+ * Display Out of Stock Badge on Product Cards
+ *
+ * This function displays an "Out of Stock" badge on product cards
+ * in the shop and category pages when products are out of stock.
+ * The badge appears before the product title.
+ *
+ * Hook: woocommerce_before_shop_loop_item_title
+ * This hook fires before the product title on shop and category archive pages.
+ * It automatically runs on shop and category pages, so no additional page checks are needed.
+ */
+function woocommerce_display_out_of_stock_badge() {
+	// Check if WooCommerce is active before proceeding
+	if ( ! class_exists( 'WooCommerce' ) ) {
+		return;
+	}
+
+	// Get the current product object in the loop
+	// Try global $product first (available in WooCommerce loops)
+	global $product;
+	
+	// If global $product is not available, get it from the current post
+	// This ensures compatibility with different WooCommerce versions and contexts
+	if ( ! $product || ! is_a( $product, 'WC_Product' ) ) {
+		global $post;
+		if ( ! $post ) {
+			return;
+		}
+		$product = wc_get_product( $post->ID );
+		if ( ! $product ) {
+			return;
+		}
+	}
+
+	// Check if product is out of stock
+	// is_in_stock() returns false if product is out of stock
+	// get_stock_status() returns 'outofstock' if out of stock
+	if ( $product->is_in_stock() ) {
+		return; // Exit early if product is in stock
+	}
+
+	// Get stock status for additional validation
+	$stock_status = $product->get_stock_status();
+	
+	// Only display badge if stock status is 'outofstock'
+	if ( 'outofstock' !== $stock_status ) {
+		return;
+	}
+
+	// Prepare badge text
+	$badge_text = __( 'Out of Stock', 'woocommerce' );
+
+	// Output the badge with minimal HTML
+	// Wrapped in a div for proper positioning within the product card structure
+	// esc_html() ensures safe output and prevents XSS attacks
+	// esc_attr() sanitizes the class name
+	printf(
+		'<div class="out-of-stock-badge-wrapper"><span class="out-of-stock-badge">%s</span></div>',
+		esc_html( $badge_text )
+	);
+}
+// Hook into WooCommerce before shop loop item title
+// Priority 5 ensures it displays after the product origin badge but before the title
+// This hook automatically runs on shop and category archive pages
+// Badge is positioned absolutely over the product image via CSS
+add_action( 'woocommerce_before_shop_loop_item_title', 'woocommerce_display_out_of_stock_badge', 5 );
+
+/**
  * Render Mini Cart HTML
  *
  * This function generates the HTML for the mini cart dropdown.

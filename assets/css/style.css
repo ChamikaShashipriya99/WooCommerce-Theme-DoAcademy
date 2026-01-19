@@ -1279,6 +1279,20 @@ body #secondary {
 }
 
 
+/* Product card positioning for badges */
+.woocommerce ul.products li.product,
+.woocommerce-page ul.products li.product {
+	position: relative;
+}
+
+/* Product origin badge wrapper */
+.product-origin-badge-wrapper {
+	position: absolute;
+	top: 15px;
+	left: 15px;
+	z-index: 10;
+}
+
 .product-origin-badge {
 	display: inline-block !important;
 	padding: 7px 14px;
@@ -1323,6 +1337,45 @@ body #secondary {
 
 .product-origin-badge--imported:hover {
 	background: linear-gradient(135deg, #2980b9 0%, #2471a3 100%) !important;
+}
+
+/* Out of Stock Badge */
+.out-of-stock-badge-wrapper {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	z-index: 10;
+	pointer-events: none;
+	width: auto;
+}
+
+.out-of-stock-badge {
+	display: inline-block !important;
+	padding: 7px 14px;
+	font-size: 11px;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+	border-radius: 20px;
+	color: #fff !important;
+	background: linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0) 100%);
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15), 0 1px 3px rgba(0, 0, 0, 0.1);
+	line-height: 1.3;
+	pointer-events: auto;
+	white-space: nowrap;
+	transition: all 0.3s ease;
+	border: 1px solid rgba(255, 255, 255, 0.2);
+	backdrop-filter: blur(4px);
+	-webkit-backdrop-filter: blur(4px);
+	background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%) !important;
+	border-color: rgba(255, 255, 255, 0.25);
+}
+
+.out-of-stock-badge:hover {
+	transform: translateY(-1px);
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2), 0 2px 4px rgba(0, 0, 0, 0.15);
+	background: linear-gradient(135deg, #c0392b 0%, #a93226 100%) !important;
 }
 
 /* ==========================================================================
