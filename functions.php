@@ -122,17 +122,32 @@ function woocommerce_theme_enqueue_assets() {
 	);
 
 	/**
+	 * Enqueue League Spartan Google Font
+	 * 
+	 * League Spartan is a geometric sans-serif font perfect for e-commerce sites.
+	 * Loading weights 400 (Regular), 500 (Medium), 600 (Semi-Bold), and 700 (Bold)
+	 * to provide typographic hierarchy throughout the site.
+	 */
+	wp_enqueue_style(
+		'league-spartan-font',
+		'https://fonts.googleapis.com/css2?family=League+Spartan:wght@400;500;600;700&display=swap',
+		array(), // No dependencies
+		null // No version needed for Google Fonts
+	);
+
+	/**
 	 * Prepare Style Dependencies Array
 	 * 
 	 * Dependencies ensure assets load in the correct order. WordPress will:
 	 * 1. Load Font Awesome first (no dependencies)
-	 * 2. Load WooCommerce styles (if active) after Font Awesome
-	 * 3. Load theme styles last (depends on both above)
+	 * 2. Load League Spartan font (no dependencies)
+	 * 3. Load WooCommerce styles (if active) after fonts
+	 * 4. Load theme styles last (depends on all above)
 	 * 
 	 * This ensures theme styles can override WooCommerce styles, and both
-	 * can use Font Awesome icons without conflicts.
+	 * can use Font Awesome icons and League Spartan font without conflicts.
 	 */
-	$dependencies = array( 'font-awesome' ); // Theme style depends on Font Awesome
+	$dependencies = array( 'font-awesome', 'league-spartan-font' ); // Theme style depends on Font Awesome and League Spartan
 	if ( class_exists( 'WooCommerce' ) ) {
 		/**
 		 * Add WooCommerce Stylesheet as Dependency
