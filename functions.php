@@ -2742,19 +2742,86 @@ function woocommerce_theme_generate_order_download( $order ) {
 						$product_name = $item->get_name();
 						$quantity = $item->get_quantity();
 						$item_total = $order->get_formatted_line_subtotal( $item );
+						
+						// Get variation data (Color and Size)
+						$variation_data = array();
+						$item_meta_data = $item->get_meta_data();
+						
+						// Extract Color and Size from variation attributes
+						$color_value = '';
+						$size_value = '';
+						
+						foreach ( $item_meta_data as $meta ) {
+							$meta_key = $meta->key;
+							$meta_value = $meta->value;
+							
+							// Check for Color attribute (supports various formats)
+							if ( strpos( $meta_key, 'color' ) !== false || strpos( $meta_key, 'pa_color' ) !== false || strpos( $meta_key, 'attribute_pa_color' ) !== false ) {
+								$color_value = $meta_value;
+							}
+							
+							// Check for Size attribute (supports various formats)
+							if ( strpos( $meta_key, 'size' ) !== false || strpos( $meta_key, 'pa_size' ) !== false || strpos( $meta_key, 'attribute_pa_size' ) !== false ) {
+								$size_value = $meta_value;
+							}
+						}
+						
+						// Also check formatted meta data for display values
+						$formatted_meta = $item->get_formatted_meta_data( '_', true );
+						foreach ( $formatted_meta as $meta ) {
+							$meta_key_lower = strtolower( $meta->display_key );
+							if ( strpos( $meta_key_lower, 'color' ) !== false && empty( $color_value ) ) {
+								$color_value = $meta->display_value;
+							}
+							if ( strpos( $meta_key_lower, 'size' ) !== false && empty( $size_value ) ) {
+								$size_value = $meta->display_value;
+							}
+						}
 						?>
 						<tr>
 							<td>
-								<?php echo esc_html( $product_name ); ?>
+								<strong><?php echo esc_html( $product_name ); ?></strong>
 								<?php
-								// Display variation attributes if available
-								$meta_data = $item->get_formatted_meta_data( '_', true );
-								if ( ! empty( $meta_data ) ) {
-									echo '<div style="font-size: 11px; color: #666; margin-top: 5px;">';
-									foreach ( $meta_data as $meta ) {
-										echo esc_html( $meta->display_key . ': ' . $meta->display_value ) . '<br>';
+								// Display Color and Size prominently if available
+								if ( ! empty( $color_value ) || ! empty( $size_value ) ) {
+									echo '<div style="font-size: 11px; color: #666; margin-top: 8px; padding-top: 5px; border-top: 1px solid #eee;">';
+									if ( ! empty( $color_value ) ) {
+										echo '<strong>' . esc_html__( 'Color', 'woocommerce' ) . ':</strong> ' . esc_html( $color_value ) . '<br>';
+									}
+									if ( ! empty( $size_value ) ) {
+										echo '<strong>' . esc_html__( 'Size', 'woocommerce' ) . ':</strong> ' . esc_html( $size_value ) . '<br>';
 									}
 									echo '</div>';
+								}
+								
+								// Display other variation attributes if available (excluding Color and Size already shown)
+								if ( ! empty( $formatted_meta ) ) {
+									$displayed_attributes = array();
+									if ( ! empty( $color_value ) ) {
+										$displayed_attributes[] = strtolower( 'color' );
+									}
+									if ( ! empty( $size_value ) ) {
+										$displayed_attributes[] = strtolower( 'size' );
+									}
+									
+									$other_meta = array();
+									foreach ( $formatted_meta as $meta ) {
+										$meta_key_lower = strtolower( $meta->display_key );
+										$is_color = strpos( $meta_key_lower, 'color' ) !== false;
+										$is_size = strpos( $meta_key_lower, 'size' ) !== false;
+										
+										if ( ! $is_color && ! $is_size ) {
+											$other_meta[] = $meta;
+										}
+									}
+									
+									if ( ! empty( $other_meta ) ) {
+										echo '<div style="font-size: 11px; color: #666; margin-top: 5px;">';
+										foreach ( $other_meta as $meta ) {
+											echo esc_html( $meta->display_key . ': ' . $meta->display_value ) . '<br>';
+										}
+										echo '</div>';
+									}
 								}
 								?>
 							</td>
