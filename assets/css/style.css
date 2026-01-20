@@ -1455,6 +1455,22 @@ body #secondary {
 	background: linear-gradient(135deg, #2980b9 0%, #2471a3 100%) !important;
 }
 
+/* Single Product Page - Origin Badge Styling */
+.product-origin-badge-wrapper--single {
+	position: static; /* Static positioning for inline display */
+	display: inline-block;
+	margin-bottom: 1rem;
+	margin-right: 1rem;
+	vertical-align: middle;
+}
+
+/* Override absolute positioning for single product page badge */
+.single-product .product-origin-badge-wrapper--single {
+	position: static;
+	top: auto;
+	left: auto;
+}
+
 /* Out of Stock Badge */
 .out-of-stock-badge-wrapper {
 	position: absolute;

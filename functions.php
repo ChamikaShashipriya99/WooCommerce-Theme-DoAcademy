@@ -1821,6 +1821,85 @@ function woocommerce_display_product_origin_badge() {
 add_action( 'woocommerce_before_shop_loop_item_title', 'woocommerce_display_product_origin_badge', 3 );
 
 /**
+ * Display Product Origin Badge on Single Product Page
+ *
+ * This function displays a badge showing "Local" or "Imported" on single product pages.
+ * The badge appears in the product summary area, typically near the product title.
+ *
+ * Hook: woocommerce_single_product_summary
+ * This hook fires in the product summary section on single product pages.
+ * Priority 5 ensures it displays early, before the product title (priority 10).
+ */
+function woocommerce_display_product_origin_badge_single() {
+	// Only show on single product pages
+	if ( ! function_exists( 'is_product' ) || ! is_product() ) {
+		return;
+	}
+
+	// Check if WooCommerce is active before proceeding
+	if ( ! class_exists( 'WooCommerce' ) ) {
+		return;
+	}
+
+	// Get the current product object
+	global $product;
+	
+	// If global $product is not available, get it from the current post
+	if ( ! $product || ! is_a( $product, 'WC_Product' ) ) {
+		global $post;
+		if ( ! $post ) {
+			return;
+		}
+		$product = wc_get_product( $post->ID );
+		if ( ! $product ) {
+			return;
+		}
+	}
+
+	// Get the product ID
+	$product_id = $product->get_id();
+
+	// Get the product origin meta value
+	// Returns empty string if no value exists
+	$product_origin = get_post_meta( $product_id, '_product_origin', true );
+
+	// Only display badge if product origin is set and valid
+	// Empty string means no origin selected, so skip badge display
+	if ( empty( $product_origin ) ) {
+		return;
+	}
+
+	// Validate the value against allowed options for security
+	// This ensures only valid values are displayed
+	$allowed_values = array( 'local', 'imported' );
+	if ( ! in_array( $product_origin, $allowed_values, true ) ) {
+		return; // Exit if invalid value
+	}
+
+	// Prepare badge text based on origin value
+	// Map internal values to display labels
+	$badge_text = '';
+	if ( 'local' === $product_origin ) {
+		$badge_text = __( 'Local', 'woocommerce' );
+	} elseif ( 'imported' === $product_origin ) {
+		$badge_text = __( 'Imported', 'woocommerce' );
+	}
+
+	// Output the badge with a wrapper class specific to single product pages
+	// esc_html() ensures safe output and prevents XSS attacks
+	// esc_attr() sanitizes the class name
+	printf(
+		'<div class="product-origin-badge-wrapper product-origin-badge-wrapper--single"><span class="product-origin-badge product-origin-badge--%s">%s</span></div>',
+		esc_attr( $product_origin ),  // CSS class modifier (e.g., product-origin-badge--local)
+		esc_html( $badge_text )       // Badge text (Local or Imported)
+	);
+}
+// Hook into WooCommerce single product summary
+// Priority 5 ensures it displays before the product title (priority 10)
+// This hook only runs on single product pages
+add_action( 'woocommerce_single_product_summary', 'woocommerce_display_product_origin_badge_single', 5 );
+
+/**
  * Display Out of Stock Badge on Product Cards
  *
  * This function displays an "Out of Stock" badge on product cards
