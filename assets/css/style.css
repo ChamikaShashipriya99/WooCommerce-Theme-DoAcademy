@@ -1454,6 +1454,44 @@ body #secondary {
 	box-shadow: 0 4px 8px rgba(0, 115, 170, 0.2);
 }
 
+/* ==========================================================================
+   Product Price as Label/Badge (professional look, no hover)
+   ========================================================================== */
+
+/**
+ * Price label styling on product cards
+ * Applies to regular and sale prices, without changing hover behavior.
+ */
+.woocommerce ul.products li.product .price,
+.woocommerce-page ul.products li.product .price {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.4rem;
+	padding: 0.4rem 0.85rem;
+	margin: 0.25rem 0 0.75rem;
+	font-size: 0.95rem;
+	font-weight: 600;
+	color: #0b1f33;              /* deep navy for contrast */
+	background: #fff6e5;         /* warm spotlight backdrop */
+	border: 1px solid #f0c14b;   /* golden accent */
+	border-radius: 999px;        /* pill */
+	line-height: 1.2;
+}
+
+.woocommerce ul.products li.product .price del,
+.woocommerce-page ul.products li.product .price del {
+	opacity: 0.6;
+	display: inline-flex;
+	align-items: center;
+}
+
+.woocommerce ul.products li.product .price ins,
+.woocommerce-page ul.products li.product .price ins {
+	color: #b42318;              /* refined red */
+	text-decoration: none;
+	font-weight: 700;
+}
+
 /* Product origin badge wrapper */
 .product-origin-badge-wrapper {
 	position: absolute;
