@@ -1662,6 +1662,21 @@ function woocommerce_add_product_origin_field() {
 		'description' => __( 'Select whether this product is locally sourced or imported.', 'woocommerce' ), // Help text
 	) );
 
+	/**
+	 * Sale Badge Toggle (Per Product)
+	 *
+	 * Allows admin to hide the sale badge for this product, even if it is on sale.
+	 * This does NOT change pricing or sale status; it only affects the badge display.
+	 */
+	$hide_sale_badge = get_post_meta( $post->ID, '_hide_sale_badge', true );
+	woocommerce_wp_checkbox( array(
+		'id'          => '_hide_sale_badge',
+		'label'       => __( 'Hide Sale badge', 'woocommerce' ),
+		'value'       => $hide_sale_badge,
+		'desc_tip'    => true,
+		'description' => __( 'When enabled, the Sale badge will not be shown on shop cards or the single product page for this product.', 'woocommerce' ),
+	) );
+
 	// Close the field wrapper
 	echo '</div>';
 }
@@ -1737,10 +1752,57 @@ function woocommerce_save_product_origin_field( $post_id ) {
 	// update_post_meta() automatically handles add/update logic
 	// The meta key '_product_origin' (with underscore prefix) is hidden from custom fields meta box
 	update_post_meta( $post_id, '_product_origin', $product_origin );
+
+	/**
+	 * Save Sale Badge Toggle
+	 *
+	 * Checkbox value is saved as 'yes' or deleted if unchecked (clean storage).
+	 */
+	$hide_sale_badge = isset( $_POST['_hide_sale_badge'] ) ? 'yes' : '';
+	if ( 'yes' === $hide_sale_badge ) {
+		update_post_meta( $post_id, '_hide_sale_badge', 'yes' );
+	} else {
+		delete_post_meta( $post_id, '_hide_sale_badge' );
+	}
 }
 // Hook into WooCommerce product meta processing
 // Priority 10 ensures it saves at the standard time
 add_action( 'woocommerce_process_product_meta', 'woocommerce_save_product_origin_field', 10 );
+
+/**
+ * Conditionally Hide WooCommerce Sale Badge (Shop + Single)
+ *
+ * Uses the standard WooCommerce filter so we don't need to replace templates.
+ * If a product has `_hide_sale_badge` = 'yes', we return an empty string, which
+ * suppresses the badge output everywhere WooCommerce uses `woocommerce_sale_flash`.
+ *
+ * @param string     $html    Sale flash HTML.
+ * @param WP_Post    $post    Post object.
+ * @param WC_Product $product Product object.
+ * @return string
+ */
+function woocommerce_theme_maybe_hide_sale_flash( $html, $post, $product ) {
+	if ( ! class_exists( 'WooCommerce' ) ) {
+		return $html;
+	}
+
+	if ( ! $product || ! is_a( $product, 'WC_Product' ) ) {
+		return $html;
+	}
+
+	$product_id = $product->get_id();
+	if ( ! $product_id ) {
+		return $html;
+	}
+
+	$hide_sale_badge = get_post_meta( $product_id, '_hide_sale_badge', true );
+	if ( 'yes' === $hide_sale_badge ) {
+		return '';
+	}
+
+	return $html;
+}
+add_filter( 'woocommerce_sale_flash', 'woocommerce_theme_maybe_hide_sale_flash', 10, 3 );
 
 /**
  * Display Product Origin Badge on Product Cards
