@@ -160,6 +160,20 @@
 
 <?php
 /**
+ * Back to Top Button
+ * 
+ * Fixed position button that appears when user scrolls down.
+ * Clicking it smoothly scrolls the page back to the top.
+ */
+?>
+<button id="back-to-top" class="back-to-top" aria-label="<?php esc_attr_e( 'Back to top', 'woocommerce' ); ?>" title="<?php esc_attr_e( 'Back to top', 'woocommerce' ); ?>">
+	<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+		<path d="M10 15V5M10 5L5 10M10 5L15 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+	</svg>
+</button>
+
+<?php
+/**
  * wp_footer() Hook - Critical WordPress Function
  * 
  * This function outputs essential content before the closing </body> tag.

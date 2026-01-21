@@ -247,6 +247,21 @@ function woocommerce_theme_enqueue_assets() {
 			true
 		);
 	}
+
+	/**
+	 * Enqueue Back to Top Button JavaScript
+	 * 
+	 * Handles the display and functionality of the back-to-top button.
+	 * Shows button when user scrolls down, hides when at top.
+	 * Smoothly scrolls to top when button is clicked.
+	 */
+	wp_enqueue_script(
+		'woocommerce-back-to-top',
+		get_template_directory_uri() . '/assets/js/back-to-top.js',
+		array( 'jquery' ),
+		$theme_version,
+		true
+	);
 }
 /**
  * Hook Registration: wp_enqueue_scripts
