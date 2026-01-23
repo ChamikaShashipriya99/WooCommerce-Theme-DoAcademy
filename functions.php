@@ -107,6 +107,9 @@ if ( class_exists( 'WooCommerce' ) || defined( 'WC_PLUGIN_FILE' ) ) {
 	// WooCommerce hooks: shop page customizations, badges.
 	require_once WOOCOMMERCE_THEME_INC_DIR . '/woocommerce/hooks.php';
 
+	// Category filter on shop page.
+	require_once WOOCOMMERCE_THEME_INC_DIR . '/woocommerce/filter-categories.php';
+
 	// Cart functionality: mini cart, AJAX fragments, automatic discounts.
 	require_once WOOCOMMERCE_THEME_INC_DIR . '/woocommerce/cart.php';
 

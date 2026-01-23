@@ -158,6 +158,17 @@ function woocommerce_theme_enqueue_assets() {
 		);
 	}
 
+	// Shop category filter auto-submit (only on shop page).
+	if ( function_exists( 'is_shop' ) && is_shop() ) {
+		wp_enqueue_script(
+			'woocommerce-shop-category-filter',
+			get_template_directory_uri() . '/assets/js/shop-category-filter.js',
+			array( 'jquery' ),
+			$theme_version,
+			true
+		);
+	}
+
 	// Back to top button functionality.
 	wp_enqueue_script(
 		'woocommerce-back-to-top',

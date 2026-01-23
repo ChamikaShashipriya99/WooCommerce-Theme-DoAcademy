@@ -1015,6 +1015,91 @@ article:last-child {
 }
 
 /* ==========================================================================
+   Shop Page Category Filter
+   ========================================================================== */
+
+.shop-category-filter {
+	margin-bottom: 1.5rem;
+}
+
+.shop-category-filter__form {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 0.75rem;
+}
+
+.shop-category-filter__label {
+	font-size: 0.9375rem;
+	font-weight: 600;
+	color: #333;
+	margin: 0;
+}
+
+.shop-category-filter__select {
+	padding: 0.75rem 2.5rem 0.75rem 1rem;
+	font-size: 0.9375rem;
+	font-weight: 500;
+	color: #333;
+	background-color: #fff;
+	border: 2px solid #e0e0e0;
+	border-radius: 8px;
+	cursor: pointer;
+	appearance: none;
+	-webkit-appearance: none;
+	-moz-appearance: none;
+	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%23333' d='M6 8L0 0h12z'/%3E%3C/svg%3E");
+	background-repeat: no-repeat;
+	background-position: right 1rem center;
+	background-size: 12px 8px;
+	min-width: 200px;
+	transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.shop-category-filter__select:hover {
+	border-color: #0073aa;
+	box-shadow: 0 2px 8px rgba(0, 115, 170, 0.1);
+}
+
+.shop-category-filter__select:focus {
+	outline: none;
+	border-color: #0073aa;
+	box-shadow: 0 0 0 3px rgba(0, 115, 170, 0.1);
+}
+
+.shop-category-filter__submit {
+	padding: 0.75rem 1.25rem;
+	font-size: 0.9375rem;
+	font-weight: 600;
+	font-family: inherit;
+	color: #fff;
+	background-color: #0b1a2a;
+	border: 2px solid #0b1a2a;
+	border-radius: 8px;
+	cursor: pointer;
+	transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+.shop-category-filter__submit:hover,
+.shop-category-filter__submit:focus {
+	background-color: #162d42;
+	border-color: #162d42;
+	color: #fff;
+	outline: none;
+}
+
+@media (max-width: 479px) {
+	.shop-category-filter__form {
+		flex-direction: column;
+		align-items: stretch;
+	}
+	.shop-category-filter__select {
+		min-width: 0;
+		width: 100%;
+	}
+}
+
+/* ==========================================================================
    Shop Page Sorting Dropdown
    ========================================================================== */
 
