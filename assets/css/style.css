@@ -2354,6 +2354,57 @@ body #secondary {
 }
 
 /* ==========================================================================
+   My Account - Edit Address Buttons
+   ========================================================================== */
+
+/**
+ * Edit Address Buttons
+ *
+ * Styles the "Edit" links for Billing/Shipping addresses in
+ * My Account > Addresses as small pill buttons.
+ *
+ * Markup reference (WooCommerce core):
+ * <header class="woocommerce-Address-title title">
+ *   <h3>Billing address</h3>
+ *   <a href="…" class="edit">Edit</a>
+ * </header>
+ */
+.woocommerce-account .woocommerce-MyAccount-content .woocommerce-Address .title .edit,
+.woocommerce-account .woocommerce-MyAccount-content .woocommerce-Address a.edit {
+	display: inline-block;
+	padding: 0.35rem 0.9rem;
+	font-size: 0.85rem;
+	font-weight: 500;
+	line-height: 1.2;
+	border-radius: 999px; /* pill shape */
+	text-decoration: none;
+	border: 1px solid #0073aa;
+	background-color: #ffffff;
+	color: #0073aa;
+	transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease,
+		box-shadow 0.2s ease, transform 0.08s ease;
+}
+
+.woocommerce-account .woocommerce-MyAccount-content .woocommerce-Address .title .edit:hover,
+.woocommerce-account .woocommerce-MyAccount-content .woocommerce-Address .title .edit:focus,
+.woocommerce-account .woocommerce-MyAccount-content .woocommerce-Address a.edit:hover,
+.woocommerce-account .woocommerce-MyAccount-content .woocommerce-Address a.edit:focus {
+	background-color: #0073aa;
+	border-color: #0073aa;
+	color: #ffffff;
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.12);
+	transform: translateY(-1px);
+}
+
+@media (max-width: 767px) {
+	.woocommerce-account .woocommerce-MyAccount-content .woocommerce-Address .title .edit,
+	.woocommerce-account .woocommerce-MyAccount-content .woocommerce-Address a.edit {
+		padding: 0.35rem 0.75rem;
+		font-size: 0.8rem;
+	}
+}
+
+/* ==========================================================================
    My Account - Order Status Labels
    ========================================================================== */
 
@@ -2501,6 +2552,176 @@ body #secondary {
 	.woocommerce .woocommerce-MyAccount-content .order-status {
 		font-size: 0.75rem;
 		padding: 0.25rem 0.6rem;
+	}
+}
+
+/* ==========================================================================
+   My Account - Orders Table
+   ========================================================================== */
+
+/**
+ * Orders table wrapper
+ * Adds card-like look around the whole orders table.
+ */
+.woocommerce-account .woocommerce-MyAccount-content .woocommerce-orders-table {
+	width: 100%;
+	border-collapse: separate;
+	border-spacing: 0;
+	margin-top: 1.5rem;
+	background-color: #ffffff;
+	border-radius: 10px;
+	overflow: hidden;
+	box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+}
+
+/**
+ * Table header
+ * Sticky-style header with subtle background.
+ */
+.woocommerce-account .woocommerce-MyAccount-content .woocommerce-orders-table thead {
+	background: #f5f7fb;
+}
+
+.woocommerce-account .woocommerce-MyAccount-content .woocommerce-orders-table th {
+	padding: 0.9rem 1.2rem;
+	font-size: 0.8rem;
+	text-transform: uppercase;
+	letter-spacing: 0.06em;
+	font-weight: 600;
+	color: #555;
+	border-bottom: 1px solid #e3e7ef;
+	white-space: nowrap;
+}
+
+/**
+ * Table body rows
+ * Zebra striping + hover elevation.
+ */
+.woocommerce-account .woocommerce-MyAccount-content .woocommerce-orders-table tbody tr {
+	transition: background-color 0.16s ease, box-shadow 0.16s ease,
+		transform 0.08s ease;
+}
+
+.woocommerce-account .woocommerce-MyAccount-content .woocommerce-orders-table tbody tr:nth-child(even) {
+	background-color: #fafbff;
+}
+
+.woocommerce-account .woocommerce-MyAccount-content .woocommerce-orders-table tbody tr:hover {
+	background-color: #f0f5ff;
+	box-shadow: 0 2px 10px rgba(0, 115, 170, 0.08);
+	transform: translateY(-1px);
+}
+
+.woocommerce-account .woocommerce-MyAccount-content .woocommerce-orders-table td {
+	padding: 0.9rem 1.2rem;
+	font-size: 0.9rem;
+	border-bottom: 1px solid #f0f2f7;
+	vertical-align: middle;
+}
+
+.woocommerce-account .woocommerce-MyAccount-content .woocommerce-orders-table td a {
+	color: #0073aa;
+	font-weight: 500;
+	text-decoration: none;
+}
+
+.woocommerce-account .woocommerce-MyAccount-content .woocommerce-orders-table td a:hover {
+	color: #005a87;
+	text-decoration: underline;
+}
+
+/**
+ * "View" order button in actions column
+ * Primary pill-style button to match account theme.
+ */
+.woocommerce-account .woocommerce-MyAccount-content .woocommerce-orders-table__cell-order-actions .button,
+.woocommerce-account .woocommerce-MyAccount-content .woocommerce-orders-table__cell-order-actions .button.view,
+.woocommerce-account .woocommerce-MyAccount-content .woocommerce-button.view {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	padding: 0.45rem 1.25rem;
+	font-size: 0.85rem;
+	font-weight: 600;
+	border-radius: 999px;
+	background-color: #0073aa;
+	color: #ffffff !important;
+	text-decoration: none;
+	border: none;
+	box-shadow: 0 2px 6px rgba(0, 115, 170, 0.3);
+	transition: background-color 0.18s ease, box-shadow 0.18s ease,
+		transform 0.08s ease;
+	white-space: nowrap;
+}
+
+.woocommerce-account .woocommerce-MyAccount-content .woocommerce-orders-table__cell-order-actions .button:hover,
+.woocommerce-account .woocommerce-MyAccount-content .woocommerce-orders-table__cell-order-actions .button:focus,
+.woocommerce-account .woocommerce-MyAccount-content .woocommerce-button.view:hover,
+.woocommerce-account .woocommerce-MyAccount-content .woocommerce-button.view:focus {
+	background-color: #005a87;
+	box-shadow: 0 3px 10px rgba(0, 90, 135, 0.4);
+	transform: translateY(-1px);
+	color: #ffffff !important;
+}
+
+.woocommerce-account .woocommerce-MyAccount-content .woocommerce-orders-table__cell-order-actions .button:active,
+.woocommerce-account .woocommerce-MyAccount-content .woocommerce-button.view:active {
+	transform: translateY(0);
+	box-shadow: 0 1px 4px rgba(0, 90, 135, 0.3);
+}
+
+/**
+ * Empty orders state
+ */
+.woocommerce-account .woocommerce-MyAccount-content .woocommerce-orders-table__empty {
+	text-align: center;
+	padding: 2rem 1.5rem;
+	color: #666;
+	font-size: 0.95rem;
+}
+
+/**
+ * Responsive orders table
+ * Stack cells on small screens with labels.
+ */
+@media (max-width: 767px) {
+	.woocommerce-account .woocommerce-MyAccount-content .woocommerce-orders-table thead {
+		display: none;
+	}
+
+	.woocommerce-account .woocommerce-MyAccount-content .woocommerce-orders-table,
+	.woocommerce-account .woocommerce-MyAccount-content .woocommerce-orders-table tbody,
+	.woocommerce-account .woocommerce-MyAccount-content .woocommerce-orders-table tr,
+	.woocommerce-account .woocommerce-MyAccount-content .woocommerce-orders-table td {
+		display: block;
+		width: 100%;
+	}
+
+	.woocommerce-account .woocommerce-MyAccount-content .woocommerce-orders-table tbody tr {
+		margin-bottom: 1rem;
+		border-radius: 10px;
+		border: 1px solid #e3e7ef;
+		overflow: hidden;
+	}
+
+	.woocommerce-account .woocommerce-MyAccount-content .woocommerce-orders-table td {
+		border: none;
+		padding: 0.7rem 1rem;
+		position: relative;
+		padding-left: 7.5rem;
+	}
+
+	.woocommerce-account .woocommerce-MyAccount-content .woocommerce-orders-table td::before {
+		content: attr(data-title);
+		position: absolute;
+		left: 1rem;
+		top: 50%;
+		transform: translateY(-50%);
+		font-size: 0.75rem;
+		text-transform: uppercase;
+		letter-spacing: 0.06em;
+		color: #888;
+		font-weight: 600;
 	}
 }
 
