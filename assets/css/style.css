@@ -2632,25 +2632,22 @@ body #secondary {
 
 /**
  * "View" order button in actions column
- * Primary pill-style button to match account theme.
+ * Match styling of Order Download / Browse Products button.
  */
 .woocommerce-account .woocommerce-MyAccount-content .woocommerce-orders-table__cell-order-actions .button,
 .woocommerce-account .woocommerce-MyAccount-content .woocommerce-orders-table__cell-order-actions .button.view,
 .woocommerce-account .woocommerce-MyAccount-content .woocommerce-button.view {
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	padding: 0.45rem 1.25rem;
-	font-size: 0.85rem;
-	font-weight: 600;
-	border-radius: 999px;
-	background-color: #0073aa;
+	display: inline-block;
+	padding: 0.75rem 1.5rem;
+	background-color: #333333;
 	color: #ffffff !important;
 	text-decoration: none;
+	border-radius: 4px;
+	font-weight: 600;
+	transition: background-color 0.3s ease, transform 0.2s ease;
 	border: none;
-	box-shadow: 0 2px 6px rgba(0, 115, 170, 0.3);
-	transition: background-color 0.18s ease, box-shadow 0.18s ease,
-		transform 0.08s ease;
+	cursor: pointer;
+	font-size: 0.95rem;
 	white-space: nowrap;
 }
 
@@ -2659,15 +2656,16 @@ body #secondary {
 .woocommerce-account .woocommerce-MyAccount-content .woocommerce-button.view:hover,
 .woocommerce-account .woocommerce-MyAccount-content .woocommerce-button.view:focus {
 	background-color: #005a87;
-	box-shadow: 0 3px 10px rgba(0, 90, 135, 0.4);
-	transform: translateY(-1px);
 	color: #ffffff !important;
+	text-decoration: none;
+	transform: translateY(-1px);
+	box-shadow: 0 4px 8px rgba(0, 115, 170, 0.3);
 }
 
 .woocommerce-account .woocommerce-MyAccount-content .woocommerce-orders-table__cell-order-actions .button:active,
 .woocommerce-account .woocommerce-MyAccount-content .woocommerce-button.view:active {
 	transform: translateY(0);
-	box-shadow: 0 1px 4px rgba(0, 90, 135, 0.3);
+	box-shadow: 0 2px 4px rgba(0, 115, 170, 0.2);
 }
 
 /**
@@ -2822,6 +2820,32 @@ body #secondary {
 	overflow: hidden;
 }
 
+/* Zoom icon in top-right corner of main image */
+.woocommerce div.product .woocommerce-product-gallery__trigger {
+	position: absolute;
+	top: 1rem;
+	right: 1rem;
+	width: 38px;
+	height: 38px;
+	border-radius: 50%;
+	background-color: #ffffff;
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	color: #333;
+	text-decoration: none;
+	transition: transform 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+	z-index: 2;
+}
+
+.woocommerce div.product .woocommerce-product-gallery__trigger:hover,
+.woocommerce div.product .woocommerce-product-gallery__trigger:focus {
+	transform: translateY(-1px);
+	box-shadow: 0 6px 16px rgba(0, 0, 0, 0.22);
+	background-color: #f5f5f5;
+}
+
 .woocommerce div.product .woocommerce-product-gallery__image img,
 .woocommerce div.product .woocommerce-product-gallery__image a img {
 	border-radius: 8px;
@@ -2847,8 +2871,8 @@ body #secondary {
 
 .woocommerce div.product .flex-control-thumbs li {
 	margin: 0;
-	width: auto;
-	flex: 0 0 auto;
+	width: 80px;
+	flex: 0 0 80px;
 }
 
 .woocommerce div.product .flex-control-thumbs li img {
@@ -2857,6 +2881,9 @@ body #secondary {
 	transition: all 0.3s ease;
 	cursor: pointer;
 	opacity: 0.7;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
 }
 
 .woocommerce div.product .flex-control-thumbs li img:hover,
