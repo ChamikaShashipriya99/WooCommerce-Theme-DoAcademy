@@ -143,16 +143,112 @@ if ( class_exists( 'WooCommerce' ) || defined( 'WC_PLUGIN_FILE' ) ) {
  */
 do_action( 'woocommerce_theme_loaded' );
 
-// Fix WooCommerce REST API capabilities for Administrators
-add_action('init', function() {
-    $admin_role = get_role('administrator');
-    if ($admin_role) {
-        // Add WooCommerce REST API capabilities
-        $admin_role->add_cap('read_private_products');
-        $admin_role->add_cap('read_product');
-        $admin_role->add_cap('read_products');
-        $admin_role->add_cap('read_private_shop_orders');
-        $admin_role->add_cap('read_shop_order');
-        $admin_role->add_cap('read_shop_orders');
-    }
-}, 999);
+/**
+ * ============================================================================
+ * REST API CAPABILITIES FOR ADMINISTRATORS
+ * ============================================================================
+ * Grants full REST API access to administrators, including WordPress REST API
+ * and WooCommerce REST API capabilities for complete CRUD operations.
+ *
+ * @since 1.0.0
+ */
+
+/**
+ * Add comprehensive REST API capabilities to administrator role
+ *
+ * This ensures administrators have full access to:
+ * - WordPress REST API endpoints
+ * - WooCommerce REST API endpoints (products, orders, customers, etc.)
+ * - All CRUD operations (create, read, update, delete)
+ */
+add_action( 'init', function() {
+	$admin_role = get_role( 'administrator' );
+	if ( ! $admin_role ) {
+		return;
+	}
+
+	// WordPress REST API capabilities (should already exist, but ensure they're present)
+	$admin_role->add_cap( 'read' );
+	$admin_role->add_cap( 'edit_posts' );
+	$admin_role->add_cap( 'edit_pages' );
+	$admin_role->add_cap( 'publish_posts' );
+	$admin_role->add_cap( 'delete_posts' );
+
+	// WooCommerce Product REST API capabilities
+	$admin_role->add_cap( 'read_product' );
+	$admin_role->add_cap( 'read_products' );
+	$admin_role->add_cap( 'read_private_products' );
+	$admin_role->add_cap( 'edit_product' );
+	$admin_role->add_cap( 'edit_products' );
+	$admin_role->add_cap( 'edit_others_products' );
+	$admin_role->add_cap( 'edit_private_products' );
+	$admin_role->add_cap( 'edit_published_products' );
+	$admin_role->add_cap( 'publish_products' );
+	$admin_role->add_cap( 'delete_product' );
+	$admin_role->add_cap( 'delete_products' );
+	$admin_role->add_cap( 'delete_private_products' );
+	$admin_role->add_cap( 'delete_published_products' );
+	$admin_role->add_cap( 'delete_others_products' );
+
+	// WooCommerce Order REST API capabilities
+	$admin_role->add_cap( 'read_shop_order' );
+	$admin_role->add_cap( 'read_shop_orders' );
+	$admin_role->add_cap( 'read_private_shop_orders' );
+	$admin_role->add_cap( 'edit_shop_order' );
+	$admin_role->add_cap( 'edit_shop_orders' );
+	$admin_role->add_cap( 'edit_others_shop_orders' );
+	$admin_role->add_cap( 'edit_private_shop_orders' );
+	$admin_role->add_cap( 'edit_published_shop_orders' );
+	$admin_role->add_cap( 'publish_shop_orders' );
+	$admin_role->add_cap( 'delete_shop_order' );
+	$admin_role->add_cap( 'delete_shop_orders' );
+	$admin_role->add_cap( 'delete_private_shop_orders' );
+	$admin_role->add_cap( 'delete_published_shop_orders' );
+	$admin_role->add_cap( 'delete_others_shop_orders' );
+
+	// WooCommerce Customer REST API capabilities
+	$admin_role->add_cap( 'list_users' );
+	$admin_role->add_cap( 'edit_users' );
+	$admin_role->add_cap( 'create_users' );
+	$admin_role->add_cap( 'delete_users' );
+
+	// WooCommerce Coupon REST API capabilities
+	$admin_role->add_cap( 'read_shop_coupon' );
+	$admin_role->add_cap( 'read_shop_coupons' );
+	$admin_role->add_cap( 'read_private_shop_coupons' );
+	$admin_role->add_cap( 'edit_shop_coupon' );
+	$admin_role->add_cap( 'edit_shop_coupons' );
+	$admin_role->add_cap( 'edit_others_shop_coupons' );
+	$admin_role->add_cap( 'edit_private_shop_coupons' );
+	$admin_role->add_cap( 'edit_published_shop_coupons' );
+	$admin_role->add_cap( 'publish_shop_coupons' );
+	$admin_role->add_cap( 'delete_shop_coupon' );
+	$admin_role->add_cap( 'delete_shop_coupons' );
+	$admin_role->add_cap( 'delete_private_shop_coupons' );
+	$admin_role->add_cap( 'delete_published_shop_coupons' );
+	$admin_role->add_cap( 'delete_others_shop_coupons' );
+
+	// WooCommerce Settings REST API capabilities
+	$admin_role->add_cap( 'manage_woocommerce' );
+	$admin_role->add_cap( 'view_woocommerce_reports' );
+}, 999 );
+
+/**
+ * Ensure REST API authentication works for administrators
+ *
+ * This filter allows administrators to access REST API endpoints
+ * even if authentication is required.
+ */
+add_filter( 'rest_authentication_errors', function( $result ) {
+	// If there's already an error, return it
+	if ( ! empty( $result ) ) {
+		return $result;
+	}
+
+	// Allow administrators to access REST API
+	if ( current_user_can( 'administrator' ) ) {
+		return true;
+	}
+
+	return $result;
+}, 20 );
