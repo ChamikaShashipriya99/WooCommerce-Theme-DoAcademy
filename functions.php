@@ -142,3 +142,17 @@ if ( class_exists( 'WooCommerce' ) || defined( 'WC_PLUGIN_FILE' ) ) {
  * @since 1.0.0
  */
 do_action( 'woocommerce_theme_loaded' );
+
+// Fix WooCommerce REST API capabilities for Administrators
+add_action('init', function() {
+    $admin_role = get_role('administrator');
+    if ($admin_role) {
+        // Add WooCommerce REST API capabilities
+        $admin_role->add_cap('read_private_products');
+        $admin_role->add_cap('read_product');
+        $admin_role->add_cap('read_products');
+        $admin_role->add_cap('read_private_shop_orders');
+        $admin_role->add_cap('read_shop_order');
+        $admin_role->add_cap('read_shop_orders');
+    }
+}, 999);
